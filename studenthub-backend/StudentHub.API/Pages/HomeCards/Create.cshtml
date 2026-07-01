@@ -1,0 +1,71 @@
+@page
+@model StudentHub.API.Pages.CreateModel
+
+        @{
+        ViewData["Title"] = "Create";
+        }
+        
+        <h1>Create</h1>
+        
+    <h4>HomeCard</h4>
+    <hr />
+    <div class="row">
+    <div class="col-md-4">
+    <form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="HomeCard.Section" class="control-label"></label>
+                <input asp-for="HomeCard.Section" class="form-control" />
+                <span asp-validation-for="HomeCard.Section" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="HomeCard.Icon" class="control-label"></label>
+                <input asp-for="HomeCard.Icon" class="form-control" />
+                <span asp-validation-for="HomeCard.Icon" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="HomeCard.Title" class="control-label"></label>
+                <input asp-for="HomeCard.Title" class="form-control" />
+                <span asp-validation-for="HomeCard.Title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="HomeCard.Subtitle" class="control-label"></label>
+                <input asp-for="HomeCard.Subtitle" class="form-control" />
+                <span asp-validation-for="HomeCard.Subtitle" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="HomeCard.Description" class="control-label"></label>
+                <input asp-for="HomeCard.Description" class="form-control" />
+                <span asp-validation-for="HomeCard.Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="HomeCard.Color" class="control-label"></label>
+                <input asp-for="HomeCard.Color" class="form-control" />
+                <span asp-validation-for="HomeCard.Color" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="HomeCard.Order" class="control-label"></label>
+                <input asp-for="HomeCard.Order" class="form-control" />
+                <span asp-validation-for="HomeCard.Order" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="HomeCard.IsActive" /> @Html.DisplayNameFor(model => model.HomeCard.IsActive)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="HomeCard.CreatedAt" class="control-label"></label>
+                <input asp-for="HomeCard.CreatedAt" class="form-control" />
+                <span asp-validation-for="HomeCard.CreatedAt" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="Index">Back to List</a>
+</div>
+

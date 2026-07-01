@@ -1,0 +1,98 @@
+@page
+@model StudentHub.API.Pages.Students.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+<p><a href="/Admin/Index">← Înapoi la Dashboard</a></p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].Email)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].FullName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].Faculty)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].Year)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].Section)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].StudyType)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].EntraObjectId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].IsAdmin)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].CreatedAt)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].IsActive)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.User[0].ProfilePhotoUrl)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.User) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Email)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FullName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Faculty)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Year)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Section)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StudyType)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EntraObjectId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsAdmin)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreatedAt)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsActive)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ProfilePhotoUrl)
+            </td>
+            <td>
+                <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

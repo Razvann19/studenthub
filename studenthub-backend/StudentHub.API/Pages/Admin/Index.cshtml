@@ -1,0 +1,84 @@
+﻿@page "/Admin/Index"
+@model StudentHub.API.Pages.Admin.IndexModel
+
+<h1>Admin Dashboard</h1>
+
+<div style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:1.5rem;">
+
+    <div style="border:1px solid #ddd; border-radius:8px; padding:1.5rem; min-width:220px;">
+        <h3>🏠 Home Page</h3>
+        <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+            <a href="/HomeCards?section=problems" style="padding:0.4rem 0.875rem; border:1.5px solid #ddd; border-radius:6px; text-decoration:none; color:#374151; font-size:0.875rem;">Probleme studenți</a>
+            <a href="/HomeCards?section=features" style="padding:0.4rem 0.875rem; border:1.5px solid #ddd; border-radius:6px; text-decoration:none; color:#374151; font-size:0.875rem;">Features</a>
+        </div>
+    </div>
+
+    <div style="border:1px solid #ddd; border-radius:8px; padding:1.5rem; min-width:220px;">
+        <h3>👥 Utilizatori</h3>
+        <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+            <a href="/Students" style="padding:0.4rem 0.875rem; border:1.5px solid #ddd; border-radius:6px; text-decoration:none; color:#374151; font-size:0.875rem;">Studenți</a>
+            <a href="/Admins" style="padding:0.4rem 0.875rem; border:1.5px solid #ddd; border-radius:6px; text-decoration:none; color:#374151; font-size:0.875rem;">Admini</a>
+        </div>
+    </div>
+
+    <div style="border:1px solid #ddd; border-radius:8px; padding:1.5rem; min-width:220px;">
+        <h3>💬 Chat Cantină</h3>
+        <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+            <a href="/Canteen-chat" style="padding:0.4rem 0.875rem; border:1.5px solid #ddd; border-radius:6px; text-decoration:none; color:#374151; font-size:0.875rem;">Mesaje</a>
+        </div>
+    </div>
+    
+    <div style="border:1px solid #ddd; border-radius:8px; padding:1.5rem; min-width:220px;">
+        <h3>🎓 Date Academice</h3>
+        <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+            <a href="/AcademicOptions" style="padding:0.4rem 0.875rem; border:1.5px solid #ddd; border-radius:6px; text-decoration:none; color:#374151; font-size:0.875rem;">Gestionează</a>
+        </div>
+    </div>
+    
+    <div style="border:1px solid #ddd; border-radius:8px; padding:1.5rem; min-width:220px;">
+        <h3>📖 Cursuri</h3>
+        <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+            <a href="/Courses" style="padding:0.4rem 0.875rem; border:1.5px solid #ddd; border-radius:6px; text-decoration:none; color:#374151; font-size:0.875rem;">Gestionează</a>
+        </div>
+    </div>
+    
+    <div style="border:1px solid #ddd; border-radius:8px; padding:1.5rem; min-width:220px;">
+        <h3>💬 Chat Cursuri</h3>
+        <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+            <a href="/CourseChat" style="padding:0.4rem 0.875rem; border:1.5px solid #ddd; border-radius:6px; text-decoration:none; color:#374151; font-size:0.875rem;">Mesaje</a>
+        </div>
+    </div>
+    
+    <div style="border:1px solid #ddd; border-radius:8px; padding:1.5rem; min-width:220px;">
+        <h3>🎯 Activități</h3>
+        <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+            <a href="/Activities" style="padding:0.4rem 0.875rem; border:1.5px solid #ddd; border-radius:6px; text-decoration:none; color:#374151; font-size:0.875rem;">Gestionează</a>
+        </div>
+    </div>
+    
+    <div style="border:1px solid #ddd; border-radius:8px; padding:1.5rem; min-width:220px;">
+        <h3>🎯 Chat Activități</h3>
+        <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+            <a href="/ActivityChat" style="padding:0.4rem 0.875rem; border:1.5px solid #ddd; border-radius:6px; text-decoration:none; color:#374151; font-size:0.875rem;">Mesaje</a>
+        </div>
+    </div>
+    
+    <div style="border:1px solid #ddd; border-radius:8px; padding:1.5rem; min-width:220px; position:relative;">
+        <h3>🚨 Moderare Conținut</h3>
+        @if (Model.FlaggedCount > 0)
+        {
+            <span style="position:absolute; top:0.75rem; right:0.75rem; background:#dc2626; color:white; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700;">@Model.FlaggedCount</span>
+        }
+        <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+            <a href="/Moderation" style="padding:0.4rem 0.875rem; border:1.5px solid #ddd; border-radius:6px; text-decoration:none; color:#374151; font-size:0.875rem; font-weight:600;">Vezi mesaje</a>
+        </div>
+    </div>
+
+    <div style="border:1px solid #ddd; border-radius:8px; padding:1.5rem; min-width:220px;">
+        <h3>🔤 Cuvinte Interzise</h3>
+        <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+            <a href="/BadWords" style="padding:0.4rem 0.875rem; border:1.5px solid #ddd; border-radius:6px; text-decoration:none; color:#374151; font-size:0.875rem;">Gestionează</a>
+        </div>
+    </div>
+
+</div>

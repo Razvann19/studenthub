@@ -1,0 +1,74 @@
+@page
+@model StudentHub.API.Pages.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+<h1>
+    @(Model.Section == "problems" ? "Probleme studenți" : 
+    Model.Section == "features" ? "Features" : "Toate cardurile")
+</h1>
+<p><a href="/Admin/Index">← Înapoi la Dashboard</a></p>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+@Html.AntiForgeryToken()
+<table class="table">
+    <thead>
+    <tr>
+        <th></th>
+        <th>Icon</th>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Color</th>
+        <th>IsActive</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody id="sortable-body">
+    @foreach (var item in Model.HomeCard) {
+        <tr data-id="@item.Id" style="cursor:grab;">
+            <td style="color:#aaa; user-select:none;">⠿</td>
+            <td>@Html.DisplayFor(m => item.Icon)</td>
+            <td>@Html.DisplayFor(m => item.Title)</td>
+            <td>@Html.DisplayFor(m => item.Description)</td>
+            <td>@Html.DisplayFor(m => item.Color)</td>
+            <td>@Html.DisplayFor(m => item.IsActive)</td>
+            <td>
+                <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<script>
+    Sortable.create(document.getElementById('sortable-body'), {
+        animation: 150,
+        onEnd: function () {
+            const ids = [...document.querySelectorAll('#sortable-body tr')]
+                .map(tr => parseInt(tr.dataset.id));
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]');
+            
+            fetch('?handler=Reorder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token ? token.value : ''
+                },
+                body: JSON.stringify({ ids: ids })
+            })
+            .then(r => r.json())
+            .then(d => console.log('Saved:', d))
+            .catch(e => console.error('Error:', e));
+        }
+    });
+</script>

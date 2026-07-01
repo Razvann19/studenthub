@@ -1,0 +1,25 @@
+# .env files
+.env
+*.env
+
+# Angular
+studenthub-frontend/node_modules/
+studenthub-frontend/dist/
+studenthub-frontend/.angular/
+
+# .NET
+studenthub-backend/StudentHub.API/bin/
+studenthub-backend/StudentHub.API/obj/
+studenthub-backend/StudentHub.API/uploads/
+studenthub-backend/StudentHub.API/appsettings.Production.json
+
+# SQL Server data
+sqlserver-data/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db

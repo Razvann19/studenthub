@@ -1,0 +1,300 @@
+﻿@page
+@model StudentHub.API.Pages.CourseChat.IndexModel
+@{
+    ViewData["Title"] = "Chat Cursuri";
+    var romani = new[] { "I", "II", "III", "IV", "V", "VI" };
+}
+
+<div class="admin-page">
+  <div class="admin-header">
+    <h1 class="admin-title">💬 Chat Cursuri</h1>
+    
+  </div>
+  <p><a href="/Admin/Index">← Înapoi la Dashboard</a></p>
+
+  <!-- Filtre -->
+  <div class="filter-bar">
+    
+    <form method="get" class="filter-form">
+
+      <select name="Section" class="filter-select" onchange="this.form.submit()">
+        <option value="">— Secție —</option>
+        @foreach (var s in Model.Sections)
+        {
+          <option value="@s" selected="@(Model.Section == s)">@s</option>
+        }
+      </select>
+
+      @if (!string.IsNullOrEmpty(Model.Section))
+      {
+        <select name="Year" class="filter-select" onchange="this.form.submit()">
+          <option value="">— An —</option>
+          @foreach (var y in Model.Years)
+          {
+            <option value="@y" selected="@(Model.Year == y)">Anul @romani[y - 1]</option>
+          }
+        </select>
+        <input type="hidden" name="Section" value="@Model.Section"/>
+      }
+
+      @if (!string.IsNullOrEmpty(Model.Section) && Model.Year.HasValue)
+      {
+        <select name="CourseId" class="filter-select" onchange="this.form.submit()">
+          <option value="">— Materie —</option>
+          @foreach (var c in Model.Courses)
+          {
+            <option value="@c.Id" selected="@(Model.CourseId == c.Id)">@c.Name</option>
+          }
+        </select>
+        <input type="hidden" name="Section" value="@Model.Section"/>
+        <input type="hidden" name="Year" value="@Model.Year"/>
+      }
+
+      @if (Model.CourseId.HasValue)
+      {
+        <input type="hidden" name="Section" value="@Model.Section"/>
+        <input type="hidden" name="Year" value="@Model.Year"/>
+        <input type="hidden" name="CourseId" value="@Model.CourseId"/>
+        <input type="text" name="UserFilter" value="@Model.UserFilter"
+               class="filter-input" placeholder="Filtrează după utilizator sau mesaj"/>
+        <button type="submit" class="btn-filter">Caută</button>
+        @if (!string.IsNullOrEmpty(Model.UserFilter))
+        {
+          <a href="?Section=@Model.Section&Year=@Model.Year&CourseId=@Model.CourseId&ActiveTab=@Model.ActiveTab"
+             class="btn-clear">✕ Resetează</a>
+        }
+      }
+
+    </form>
+  </div>
+
+  @if (Model.CourseId.HasValue)
+  {
+    <!-- Tabs -->
+    <div class="chat-tabs">
+      <a href="?Section=@Model.Section&Year=@Model.Year&CourseId=@Model.CourseId&ActiveTab=chat&UserFilter=@Model.UserFilter"
+         class="chat-tab @(Model.ActiveTab == "chat" ? "chat-tab--active" : "")">
+        💬 Chat
+      </a>
+      <a href="?Section=@Model.Section&Year=@Model.Year&CourseId=@Model.CourseId&ActiveTab=notes&UserFilter=@Model.UserFilter"
+         class="chat-tab @(Model.ActiveTab == "notes" ? "chat-tab--active" : "")">
+        📝 Notițe
+      </a>
+    </div>
+
+    <!-- Chat Messages -->
+    @if (Model.ActiveTab == "chat")
+    {
+      @if (!Model.Messages.Any())
+      {
+        <div class="empty-state">
+          <span>💬</span>
+          <p>Niciun mesaj găsit.</p>
+        </div>
+      }
+      else
+      {
+        <div class="messages-table-wrap">
+          <table class="messages-table">
+            <thead>
+              <tr>
+                <th>Utilizator</th>
+                <th>Mesaj</th>
+                <th>Dată</th>
+                <th>Acțiuni</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (var msg in Model.Messages)
+              {
+                <tr>
+                  <td>
+                    <div class="user-cell">
+                      <div class="user-avatar">
+                        @(string.Join("", msg.UserName.Split(' ').Take(2).Select(n => n[0])))
+                      </div>
+                      <span class="user-name">@msg.UserName</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="msg-text">
+                      @if (!string.IsNullOrEmpty(msg.Text))
+                      {
+                        <span>@msg.Text</span>
+                      }
+                      @if (!string.IsNullOrEmpty(msg.AttachmentName))
+                      {
+                        <span class="msg-attachment">📎 @msg.AttachmentName</span>
+                      }
+                    </div>
+                  </td>
+                  <td class="msg-date">
+                    @msg.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                  </td>
+                  <td>
+                    <form method="post" asp-page-handler="DeleteMessage"
+                          onsubmit="return confirm('Ștergi mesajul?')">
+                      <input type="hidden" name="messageId" value="@msg.Id" />
+                      <button type="submit" class="btn-delete">🗑️ Șterge</button>
+                    </form>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Paginare -->
+        @if (Model.TotalPages > 1)
+        {
+          <div class="pagination">
+            @if (Model.PageNumber > 1)
+            {
+              <a href="?Section=@Model.Section&Year=@Model.Year&CourseId=@Model.CourseId&ActiveTab=@Model.ActiveTab&UserFilter=@Model.UserFilter&Page=@(Model.PageNumber-1)"
+                 class="page-btn">← Prev</a>
+            }
+            <span class="page-info">Pagina @Model.PageNumber / @Model.TotalPages</span>
+            @if (Model.PageNumber < Model.TotalPages)
+            {
+              <a href="?Section=@Model.Section&Year=@Model.Year&CourseId=@Model.CourseId&ActiveTab=@Model.ActiveTab&UserFilter=@Model.UserFilter&Page=@(Model.PageNumber+1)"
+                 class="page-btn">Next →</a>
+            }
+          </div>
+        }
+      }
+    }
+
+    <!-- Notes -->
+    @if (Model.ActiveTab == "notes")
+    {
+      @if (!Model.Notes.Any())
+      {
+        <div class="empty-state">
+          <span>📝</span>
+          <p>Nicio notiță găsită.</p>
+        </div>
+      }
+      else
+      {
+        <div class="messages-table-wrap">
+          <table class="messages-table">
+            <thead>
+              <tr>
+                <th>Utilizator</th>
+                <th>Notiță</th>
+                <th>Dată</th>
+                <th>Acțiuni</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (var note in Model.Notes)
+              {
+                <tr>
+                  <td>
+                    <div class="user-cell">
+                      <div class="user-avatar">
+                        @(string.Join("", note.UserName.Split(' ').Take(2).Select(n => n[0])))
+                      </div>
+                      <span class="user-name">@note.UserName</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="msg-text">
+                      @if (!string.IsNullOrEmpty(note.Text))
+                      {
+                        <span>@note.Text</span>
+                      }
+                      @if (!string.IsNullOrEmpty(note.AttachmentName))
+                      {
+                        <span class="msg-attachment">📎 @note.AttachmentName</span>
+                      }
+                    </div>
+                  </td>
+                  <td class="msg-date">
+                    @note.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                  </td>
+                  <td>
+                    <form method="post" asp-page-handler="DeleteNote"
+                          onsubmit="return confirm('Ștergi notița?')">
+                      <input type="hidden" name="noteId" value="@note.Id" />
+                      <button type="submit" class="btn-delete">🗑️ Șterge</button>
+                    </form>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+          <div class="pagination">
+            @if (Model.PageNumber > 1)
+            {
+              <a href="?Section=@Model.Section&Year=@Model.Year&CourseId=@Model.CourseId&ActiveTab=@Model.ActiveTab&UserFilter=@Model.UserFilter&Page=@(Model.PageNumber-1)"
+                 class="page-btn">← Prev</a>
+            }
+            <span class="page-info">Pagina @Model.PageNumber / @Model.TotalPages</span>
+            @if (Model.PageNumber < Model.TotalPages)
+            {
+              <a href="?Section=@Model.Section&Year=@Model.Year&CourseId=@Model.CourseId&ActiveTab=@Model.ActiveTab&UserFilter=@Model.UserFilter&Page=@(Model.PageNumber+1)"
+                 class="page-btn">Next →</a>
+            }
+          </div>
+        }
+      }
+    }
+  }
+  else
+  {
+    <div class="empty-state">
+      <span>👆</span>
+      <p>Selectează secția, anul și materia pentru a vedea mesajele.</p>
+    </div>
+  }
+</div>
+
+<style>
+.admin-page { padding: 2rem; max-width: 1200px; font-family: 'Segoe UI', system-ui, sans-serif; }
+.admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.admin-title { font-size: 1.5rem; font-weight: 800; color: #0f1f3d; margin: 0; }
+.btn-back { background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.5rem 1rem; text-decoration: none; color: #374151; font-size: 0.875rem; }
+
+.filter-bar { margin-bottom: 1.5rem; }
+.filter-form { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+.filter-select { padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem; font-family: inherit; background: white; cursor: pointer; min-width: 160px; }
+.filter-input { padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem; font-family: inherit; min-width: 220px; }
+.filter-select:focus, .filter-input:focus { outline: none; border-color: #0f1f3d; }
+.btn-filter { background: #0f1f3d; color: white; border: none; border-radius: 0.5rem; padding: 0.5rem 1rem; font-size: 0.875rem; cursor: pointer; font-family: inherit; }
+.btn-clear { color: #6b7280; text-decoration: none; font-size: 0.875rem; padding: 0.5rem; }
+
+.chat-tabs { display: flex; border-bottom: 2px solid #e5e7eb; margin-bottom: 1.5rem; }
+.chat-tab { padding: 0.75rem 1.5rem; text-decoration: none; font-size: 0.875rem; font-weight: 600; color: #6b7280; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
+.chat-tab--active { color: #c97d00; border-bottom-color: #f0a500; }
+
+.messages-table-wrap { overflow-x: auto; border-radius: 0.75rem; border: 1.5px solid #e5e7eb; }
+.messages-table { width: 100%; border-collapse: collapse; background: white; }
+.messages-table th { padding: 0.875rem 1rem; text-align: left; font-size: 0.75rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; background: #f9fafb; border-bottom: 1.5px solid #e5e7eb; }
+.messages-table td { padding: 0.875rem 1rem; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+.messages-table tr:last-child td { border-bottom: none; }
+.messages-table tr:hover td { background: #f9fafb; }
+
+.user-cell { display: flex; align-items: center; gap: 0.625rem; }
+.user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #0f1f3d; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
+.user-name { font-size: 0.875rem; font-weight: 600; color: #0f1f3d; white-space: nowrap; }
+
+.msg-text { font-size: 0.875rem; color: #374151; max-width: 500px; }
+.msg-attachment { display: inline-block; margin-top: 0.25rem; font-size: 0.8rem; color: #6b7280; background: #f3f4f6; padding: 0.2rem 0.5rem; border-radius: 0.375rem; }
+.msg-date { font-size: 0.8rem; color: #6b7280; white-space: nowrap; }
+
+.btn-delete { background: none; border: 1px solid #fca5a5; color: #dc2626; border-radius: 0.375rem; padding: 0.3rem 0.625rem; font-size: 0.8rem; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+.btn-delete:hover { background: #fef2f2; }
+
+.pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
+.page-btn { background: white; border: 1.5px solid #e5e7eb; border-radius: 0.5rem; padding: 0.5rem 1rem; text-decoration: none; color: #374151; font-size: 0.875rem; transition: all 0.15s; }
+.page-btn:hover { border-color: #0f1f3d; }
+.page-info { font-size: 0.875rem; color: #6b7280; font-weight: 600; }
+
+.empty-state { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 4rem; color: #6b7280; font-size: 0.875rem; }
+.empty-state span { font-size: 3rem; }
+</style>

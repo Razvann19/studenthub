@@ -1,0 +1,176 @@
+﻿@page
+@model StudentHub.API.Pages.AcademicOptions.IndexModel
+@{
+    ViewData["Title"] = "Date Academice";
+}
+
+<h1>Date Academice - Administrare</h1>
+<p style="color: #6b7280;">Gestionează secțiile și numărul de ani per secție.</p>
+<div>
+    <p><a href="/Admin/Index">← Înapoi la Dashboard</a></p>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem;">
+
+    <!-- Licenta -->
+    <div>
+        <h3>📚 Licență — Secții</h3>
+        <ul id="licenta-sections" class="drag-list">
+            @foreach (var item in Model.LicentaSections)
+            {
+                <li data-id="@item.Id" class="drag-item">
+                    <span class="drag-handle">⠿</span>
+        
+                    <span class="item-view-@item.Id">
+                        <strong>@item.Value</strong>
+                        <span style="color:#6b7280; font-size:0.85rem;">— @item.Years ani</span>
+                    </span>
+
+                    <form class="item-edit-@item.Id" method="post" asp-page-handler="Edit" 
+                          style="display:none; gap:0.5rem; align-items:center;">
+                        <input type="hidden" name="id" value="@item.Id" />
+                        <input type="text" name="value" value="@item.Value" class="form-control" style="width:120px;" required />
+                        <input type="number" name="years" value="@item.Years" class="form-control" style="width:70px;" min="1" max="10" required />
+                        <button type="submit" class="btn btn-success btn-sm">✓</button>
+                        <button type="button" class="btn btn-secondary btn-sm" 
+                                onclick="cancelEdit(@item.Id)">✕</button>
+                    </form>
+
+                    <div style="margin-left:auto; display:flex; gap:0.5rem;">
+                        <button type="button" class="btn btn-secondary btn-sm" 
+                                onclick="startEdit(@item.Id)">✏️</button>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@item.Id" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Ștergi?')">✕</button>
+                        </form>
+                    </div>
+                </li>
+            }
+        </ul>
+        <form method="post" asp-page-handler="Add" style="display:flex; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">
+            <input type="hidden" name="studyType" value="licenta" />
+            <input type="text" name="value" placeholder="ex: CTI-RO" class="form-control" style="width:120px;" required />
+            <input type="number" name="years" placeholder="Ani" class="form-control" style="width:80px;" min="1" max="10" value="4" required />
+            <button type="submit" class="btn btn-primary">+ Adaugă</button>
+        </form>
+    </div>
+
+    <!-- Master -->
+    <div>
+        <h3>🎓 Master — Secții</h3>
+        <ul id="master-sections" class="drag-list">
+            @foreach (var item in Model.MasterSections)
+            {
+                <li data-id="@item.Id" class="drag-item">
+                    <span class="drag-handle">⠿</span>
+        
+                    <span class="item-view-@item.Id">
+                        <strong>@item.Value</strong>
+                        <span style="color:#6b7280; font-size:0.85rem;">— @item.Years ani</span>
+                    </span>
+
+                    <form class="item-edit-@item.Id" method="post" asp-page-handler="Edit" 
+                          style="display:none; gap:0.5rem; align-items:center;">
+                        <input type="hidden" name="id" value="@item.Id" />
+                        <input type="text" name="value" value="@item.Value" class="form-control" style="width:120px;" required />
+                        <input type="number" name="years" value="@item.Years" class="form-control" style="width:70px;" min="1" max="10" required />
+                        <button type="submit" class="btn btn-success btn-sm">✓</button>
+                        <button type="button" class="btn btn-secondary btn-sm" 
+                                onclick="cancelEdit(@item.Id)">✕</button>
+                    </form>
+
+                    <div style="margin-left:auto; display:flex; gap:0.5rem;">
+                        <button type="button" class="btn btn-secondary btn-sm" 
+                                onclick="startEdit(@item.Id)">✏️</button>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@item.Id" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Ștergi?')">✕</button>
+                        </form>
+                    </div>
+                </li>
+            }
+        </ul>
+        <form method="post" asp-page-handler="Add" style="display:flex; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">
+            <input type="hidden" name="studyType" value="master" />
+            <input type="text" name="value" placeholder="ex: CSI" class="form-control" style="width:120px;" required />
+            <input type="number" name="years" placeholder="Ani" class="form-control" style="width:80px;" min="1" max="10" value="2" required />
+            <button type="submit" class="btn btn-primary">+ Adaugă</button>
+        </form>
+    </div>
+
+</div>
+
+<style>
+.drag-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    min-height: 60px;
+    background: #f9fafb;
+}
+
+.drag-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: white;
+}
+
+.drag-item:last-child { border-bottom: none; }
+
+.drag-item.dragging {
+    opacity: 0.5;
+    background: #dbeafe;
+}
+
+.drag-handle {
+    cursor: grab;
+    color: #9ca3af;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+function initSortable(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    Sortable.create(el, {
+        handle: '.drag-handle',
+        animation: 150,
+        ghostClass: 'dragging',
+        onEnd: function() {
+            const ids = [...el.querySelectorAll('[data-id]')]
+                .map(li => li.dataset.id)
+                .join(',');
+
+            fetch('?handler=Reorder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: 'ids=' + ids
+            });
+        }
+    });
+}
+
+initSortable('licenta-sections');
+initSortable('master-sections');
+
+function startEdit(id) {
+    document.querySelector('.item-view-' + id).style.display = 'none';
+    const form = document.querySelector('.item-edit-' + id);
+    form.style.display = 'flex';
+}
+
+function cancelEdit(id) {
+    document.querySelector('.item-view-' + id).style.display = 'flex';
+    document.querySelector('.item-edit-' + id).style.display = 'none';
+}
+</script>

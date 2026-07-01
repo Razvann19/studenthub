@@ -1,0 +1,186 @@
+﻿@page
+@model StudentHub.API.Pages.Activities.IndexModel
+@{
+    ViewData["Title"] = "Activități";
+}
+
+<div class="admin-page">
+  <div class="admin-header">
+    <h1 class="admin-title">🎯 Activități</h1>
+  </div>
+  <p><a href="/Admin/Index">← Înapoi la Dashboard</a></p>
+
+  <!-- Add form -->
+  <form method="post" asp-page-handler="Add" class="add-form">
+    <input type="text" name="NewEmoji" class="add-input add-input--emoji"
+           placeholder="🎯" maxlength="2" />
+    <input type="text" name="NewName" class="add-input"
+           placeholder="Nume activitate (ex: Fotbal, Biliard...)" required />
+    <button type="submit" class="btn-add">+ Adaugă</button>
+  </form>
+
+  @if (!Model.Activities.Any())
+  {
+    <div class="empty-state">
+      <span>🎯</span>
+      <p>Nicio activitate adăugată încă.</p>
+    </div>
+  }
+  else
+  {
+    <ul class="activities-list" id="sortable">
+      @foreach (var activity in Model.Activities)
+      {
+        <li class="activity-item @(!activity.IsActive ? "activity-item--inactive" : "")"
+            data-id="@activity.Id">
+          <span class="drag-handle">⠿</span>
+
+          <span class="activity-name" id="name-@activity.Id">
+            @if (!string.IsNullOrEmpty(activity.Emoji))
+            {
+              <span>@activity.Emoji</span>
+            }
+            @activity.Name
+          </span>
+
+          <input type="text" class="edit-input edit-input--emoji" id="edit-emoji-@activity.Id"
+                 value="@activity.Emoji" style="display:none" maxlength="2" placeholder="🎯" />
+          <input type="text" class="edit-input" id="edit-@activity.Id"
+                 value="@activity.Name" style="display:none" />
+
+          <div class="activity-actions">
+            <button class="btn-edit" id="btn-edit-@activity.Id"
+                    onclick="startEdit(@activity.Id)">✏️</button>
+
+            <form method="post" asp-page-handler="Edit" style="display:inline"
+                  id="edit-form-@activity.Id">
+              <input type="hidden" name="id" value="@activity.Id" />
+              <input type="hidden" name="name" id="edit-name-@activity.Id" />
+              <input type="hidden" name="emoji" id="edit-emoji-hidden-@activity.Id" />
+              <button type="submit" class="btn-save" id="save-@activity.Id"
+                      style="display:none">✓</button>
+            </form>
+
+            <form method="post" asp-page-handler="Toggle" style="display:inline">
+              <input type="hidden" name="id" value="@activity.Id" />
+              <button type="submit" class="btn-toggle"
+                      title="@(activity.IsActive ? "Dezactivează" : "Activează")">
+                @(activity.IsActive ? "👁️" : "🚫")
+              </button>
+            </form>
+
+            <form method="post" asp-page-handler="Delete" style="display:inline"
+                  onsubmit="return confirm('Ștergi activitatea?')">
+              <input type="hidden" name="id" value="@activity.Id" />
+              <button type="submit" class="btn-delete">🗑️</button>
+            </form>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+const sortable = document.getElementById('sortable');
+if (sortable) {
+  Sortable.create(sortable, {
+    handle: '.drag-handle',
+    animation: 150,
+    onEnd: async () => {
+      const ids = [...sortable.querySelectorAll('.activity-item')]
+        .map(el => parseInt(el.dataset.id));
+      await fetch('?handler=Reorder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+        },
+        body: JSON.stringify(ids)
+      });
+    }
+  });
+}
+
+function startEdit(id) {
+  document.getElementById('name-' + id).style.display = 'none';
+  document.getElementById('edit-emoji-' + id).style.display = 'inline-block';
+  document.getElementById('edit-' + id).style.display = 'inline-block';
+  document.getElementById('btn-edit-' + id).style.display = 'none';
+  document.getElementById('save-' + id).style.display = 'inline-block';
+  document.getElementById('edit-name-' + id).value = document.getElementById('edit-' + id).value;
+  document.getElementById('edit-emoji-hidden-' + id).value = document.getElementById('edit-emoji-' + id).value;
+  document.getElementById('edit-' + id).focus();
+}
+
+document.querySelectorAll('.edit-input').forEach(input => {
+  input.addEventListener('input', () => {
+    const rawId = input.id;
+    if (rawId.startsWith('edit-emoji-') && !rawId.includes('hidden')) {
+      const id = rawId.replace('edit-emoji-', '');
+      document.getElementById('edit-emoji-hidden-' + id).value = input.value;
+    } else if (rawId.startsWith('edit-') && !rawId.includes('emoji') && !rawId.includes('name')) {
+      const id = rawId.replace('edit-', '');
+      document.getElementById('edit-name-' + id).value = input.value;
+    }
+  });
+  input.addEventListener('keydown', e => {
+    const rawId = input.id;
+    let id;
+    if (rawId.startsWith('edit-emoji-') && !rawId.includes('hidden')) {
+      id = rawId.replace('edit-emoji-', '');
+    } else {
+      id = rawId.replace('edit-', '');
+    }
+    if (e.key === 'Enter') {
+      document.getElementById('edit-form-' + id).submit();
+    }
+    if (e.key === 'Escape') {
+      document.getElementById('name-' + id).style.display = '';
+      document.getElementById('edit-emoji-' + id).style.display = 'none';
+      document.getElementById('edit-' + id).style.display = 'none';
+      document.getElementById('btn-edit-' + id).style.display = '';
+      document.getElementById('save-' + id).style.display = 'none';
+    }
+  });
+});
+</script>
+
+@Html.AntiForgeryToken()
+
+<style>
+.admin-page { padding: 2rem; max-width: 700px; font-family: 'Segoe UI', system-ui, sans-serif; }
+.admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.admin-title { font-size: 1.5rem; font-weight: 800; color: #0f1f3d; margin: 0; }
+
+.add-form { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
+.add-input { flex: 1; padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem; font-family: inherit; }
+.add-input:focus { outline: none; border-color: #0f1f3d; }
+.add-input--emoji { flex: none; width: 60px; text-align: center; font-size: 1.2rem; }
+.btn-add { background: #0f1f3d; color: white; border: none; border-radius: 0.5rem; padding: 0.625rem 1.25rem; font-size: 0.875rem; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.btn-add:hover { background: #1a3460; }
+
+.activities-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.activity-item { display: flex; align-items: center; gap: 0.75rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; padding: 0.875rem 1rem; transition: box-shadow 0.15s; }
+.activity-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.activity-item--inactive { opacity: 0.5; }
+
+.drag-handle { cursor: grab; color: #9ca3af; font-size: 1.1rem; flex-shrink: 0; }
+.drag-handle:active { cursor: grabbing; }
+
+.activity-name { flex: 1; font-size: 0.9rem; font-weight: 600; color: #0f1f3d; }
+.edit-input { padding: 0.3rem 0.5rem; border: 1.5px solid #0f1f3d; border-radius: 0.375rem; font-size: 0.9rem; font-family: inherit; }
+.edit-input:not(.edit-input--emoji) { flex: 1; }
+.edit-input--emoji { width: 50px; min-width: 50px; text-align: center; font-size: 1.2rem; flex: none; }
+
+.activity-actions { display: flex; gap: 0.375rem; flex-shrink: 0; }
+.btn-edit, .btn-save, .btn-toggle, .btn-delete { background: none; border: 1px solid #e5e7eb; border-radius: 0.375rem; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 0.8rem; transition: all 0.15s; }
+.btn-edit:hover, .btn-save:hover { background: #f3f4f6; }
+.btn-save { border-color: #10b981; color: #10b981; }
+.btn-delete { border-color: #fca5a5; color: #dc2626; }
+.btn-delete:hover { background: #fef2f2; }
+
+.empty-state { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 4rem; color: #6b7280; font-size: 0.875rem; }
+.empty-state span { font-size: 3rem; }
+</style>

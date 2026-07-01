@@ -1,0 +1,73 @@
+@page
+@model StudentHub.API.Pages.DetailsModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>HomeCard</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.HomeCard.Section)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.HomeCard.Section)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.HomeCard.Icon)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.HomeCard.Icon)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.HomeCard.Title)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.HomeCard.Title)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.HomeCard.Subtitle)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.HomeCard.Subtitle)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.HomeCard.Description)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.HomeCard.Description)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.HomeCard.Color)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.HomeCard.Color)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.HomeCard.Order)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.HomeCard.Order)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.HomeCard.IsActive)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.HomeCard.IsActive)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.HomeCard.CreatedAt)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.HomeCard.CreatedAt)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-page="./Edit" asp-route-id="@Model.HomeCard.Id">Edit</a> |
+    <a asp-page="./Index">Back to List</a>
+</div>

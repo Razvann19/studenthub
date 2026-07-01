@@ -1,0 +1,28 @@
+﻿@page
+@model StudentHub.API.Pages.Admins.IndexModel
+@{
+    ViewData["Title"] = "Admini";
+}
+
+<h1>Admini</h1>
+<p><a href="/Admin/Index">← Înapoi la Dashboard</a></p>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Email</th>
+        <th>Username</th>
+        <th>Email confirmat</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var admin in Model.Admins)
+    {
+        <tr>
+            <td>@admin.Email</td>
+            <td>@admin.UserName</td>
+            <td>@admin.EmailConfirmed</td>
+        </tr>
+    }
+    </tbody>
+</table>

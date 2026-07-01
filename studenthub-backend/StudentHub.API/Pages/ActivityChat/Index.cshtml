@@ -1,0 +1,168 @@
+﻿@page
+@model StudentHub.API.Pages.ActivityChat.IndexModel
+@{
+    ViewData["Title"] = "Chat Activități";
+}
+
+<div class="admin-page">
+  <div class="admin-header">
+    <h1 class="admin-title">🎯 Chat Activități</h1>
+  </div>
+  <p><a href="/Admin/Index">← Înapoi la Dashboard</a></p>
+  <!-- Selectare activitate -->
+  <div class="filter-bar">
+    <form method="get" class="filter-form">
+
+      <select name="ActivityId" class="filter-select" onchange="this.form.submit()">
+        <option value="">— Selectează activitatea —</option>
+        @foreach (var activity in Model.Activities)
+        {
+          <option value="@activity.Id" selected="@(Model.ActivityId == activity.Id)">
+            @activity.Name
+          </option>
+        }
+      </select>
+
+      @if (Model.ActivityId.HasValue)
+      {
+        <input type="hidden" name="ActivityId" value="@Model.ActivityId" />
+        <input type="text" name="UserFilter" value="@Model.UserFilter"
+               class="filter-input" placeholder="🔍 Caută după utilizator sau mesaj" />
+        <button type="submit" class="btn-filter">Caută</button>
+        @if (!string.IsNullOrEmpty(Model.UserFilter))
+        {
+          <a href="?ActivityId=@Model.ActivityId" class="btn-clear">✕ Resetează</a>
+        }
+      }
+
+    </form>
+  </div>
+
+  @if (Model.ActivityId.HasValue)
+  {
+    @if (!Model.Messages.Any())
+    {
+      <div class="empty-state">
+        <span>💬</span>
+        <p>Niciun mesaj găsit@(string.IsNullOrEmpty(Model.UserFilter) ? "" : " pentru căutarea curentă").</p>
+      </div>
+    }
+    else
+    {
+      <div class="messages-table-wrap">
+        <table class="messages-table">
+          <thead>
+            <tr>
+              <th>Utilizator</th>
+              <th>Mesaj</th>
+              <th>Dată</th>
+              <th>Acțiuni</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (var msg in Model.Messages)
+            {
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar">
+                      @(string.Join("", msg.UserName.Split(' ').Take(2).Select(n => n[0])))
+                    </div>
+                    <span class="user-name">@msg.UserName</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="msg-text">
+                    @if (!string.IsNullOrEmpty(msg.Text))
+                    {
+                      <span>@msg.Text</span>
+                    }
+                    @if (!string.IsNullOrEmpty(msg.AttachmentName))
+                    {
+                      <span class="msg-attachment">📎 @msg.AttachmentName</span>
+                    }
+                  </div>
+                </td>
+                <td class="msg-date">
+                  @msg.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                </td>
+                <td>
+                  <form method="post" asp-page-handler="DeleteMessage"
+                        onsubmit="return confirm('Ștergi mesajul?')">
+                    <input type="hidden" name="messageId" value="@msg.Id" />
+                    <button type="submit" class="btn-delete">🗑️ Șterge</button>
+                  </form>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (Model.TotalPages > 1)
+      {
+        <div class="pagination">
+          @if (Model.PageNumber > 1)
+          {
+            <a href="?ActivityId=@Model.ActivityId&UserFilter=@Model.UserFilter&PageNumber=@(Model.PageNumber-1)"
+               class="page-btn">← Prev</a>
+          }
+          <span class="page-info">Pagina @Model.PageNumber / @Model.TotalPages</span>
+          @if (Model.PageNumber < Model.TotalPages)
+          {
+            <a href="?ActivityId=@Model.ActivityId&UserFilter=@Model.UserFilter&PageNumber=@(Model.PageNumber+1)"
+               class="page-btn">Next →</a>
+          }
+        </div>
+      }
+    }
+  }
+  else
+  {
+    <div class="empty-state">
+      <span>👆</span>
+      <p>Selectează o activitate pentru a vedea mesajele.</p>
+    </div>
+  }
+</div>
+
+<style>
+.admin-page { padding: 2rem; max-width: 1200px; font-family: 'Segoe UI', system-ui, sans-serif; }
+.admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.admin-title { font-size: 1.5rem; font-weight: 800; color: #0f1f3d; margin: 0; }
+.btn-back { background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.5rem 1rem; text-decoration: none; color: #374151; font-size: 0.875rem; }
+
+.filter-bar { margin-bottom: 1.5rem; }
+.filter-form { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+.filter-select { padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem; font-family: inherit; background: white; cursor: pointer; min-width: 220px; }
+.filter-input { padding: 0.5rem 0.75rem; border: 1.5px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem; font-family: inherit; min-width: 250px; }
+.filter-select:focus, .filter-input:focus { outline: none; border-color: #0f1f3d; }
+.btn-filter { background: #0f1f3d; color: white; border: none; border-radius: 0.5rem; padding: 0.5rem 1rem; font-size: 0.875rem; cursor: pointer; font-family: inherit; }
+.btn-clear { color: #6b7280; text-decoration: none; font-size: 0.875rem; padding: 0.5rem; }
+
+.messages-table-wrap { overflow-x: auto; border-radius: 0.75rem; border: 1.5px solid #e5e7eb; }
+.messages-table { width: 100%; border-collapse: collapse; background: white; }
+.messages-table th { padding: 0.875rem 1rem; text-align: left; font-size: 0.75rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; background: #f9fafb; border-bottom: 1.5px solid #e5e7eb; }
+.messages-table td { padding: 0.875rem 1rem; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+.messages-table tr:last-child td { border-bottom: none; }
+.messages-table tr:hover td { background: #f9fafb; }
+
+.user-cell { display: flex; align-items: center; gap: 0.625rem; }
+.user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #0f1f3d; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
+.user-name { font-size: 0.875rem; font-weight: 600; color: #0f1f3d; white-space: nowrap; }
+
+.msg-text { font-size: 0.875rem; color: #374151; max-width: 500px; }
+.msg-attachment { display: inline-block; margin-top: 0.25rem; font-size: 0.8rem; color: #6b7280; background: #f3f4f6; padding: 0.2rem 0.5rem; border-radius: 0.375rem; }
+.msg-date { font-size: 0.8rem; color: #6b7280; white-space: nowrap; }
+
+.btn-delete { background: none; border: 1px solid #fca5a5; color: #dc2626; border-radius: 0.375rem; padding: 0.3rem 0.625rem; font-size: 0.8rem; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+.btn-delete:hover { background: #fef2f2; }
+
+.pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
+.page-btn { background: white; border: 1.5px solid #e5e7eb; border-radius: 0.5rem; padding: 0.5rem 1rem; text-decoration: none; color: #374151; font-size: 0.875rem; transition: all 0.15s; }
+.page-btn:hover { border-color: #0f1f3d; }
+.page-info { font-size: 0.875rem; color: #6b7280; font-weight: 600; }
+
+.empty-state { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 4rem; color: #6b7280; font-size: 0.875rem; }
+.empty-state span { font-size: 3rem; }
+</style>

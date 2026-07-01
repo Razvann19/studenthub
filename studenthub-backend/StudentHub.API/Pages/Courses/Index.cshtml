@@ -1,0 +1,204 @@
+﻿@page
+@model StudentHub.API.Pages.Courses.IndexModel
+@{
+    ViewData["Title"] = "Cursuri";
+    var romani = new[] { "I", "II", "III", "IV", "V", "VI" };
+}
+
+<div class="admin-page">
+  <div class="admin-header">
+    <h1 class="admin-title">📚 Cursuri</h1>
+    <a href="/Admin/Index" class="btn-back">← Înapoi</a>
+  </div>
+
+  <div class="sections-grid">
+    <div>
+      <h3 class="section-title">📚 Licență</h3>
+      <div class="section-btns">
+        @foreach (var opt in Model.LicentaSections)
+        {
+          var isActive = Model.SelectedSection == opt.Value && Model.SelectedStudyType == "licenta";
+          <a href="?SelectedStudyType=licenta&SelectedSection=@opt.Value"
+             class="section-btn @(isActive ? "section-btn--active" : "")">
+            @opt.Value
+          </a>
+        }
+      </div>
+    </div>
+    <div>
+      <h3 class="section-title">🎓 Master</h3>
+      <div class="section-btns">
+        @foreach (var opt in Model.MasterSections)
+        {
+          var isActive = Model.SelectedSection == opt.Value && Model.SelectedStudyType == "master";
+          <a href="?SelectedStudyType=master&SelectedSection=@opt.Value"
+             class="section-btn @(isActive ? "section-btn--active" : "")">
+            @opt.Value
+          </a>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (!string.IsNullOrEmpty(Model.SelectedSection) && Model.SelectedOption != null)
+  {
+    <hr class="divider" />
+    <h3 class="year-title">@Model.SelectedSection — Selectează anul</h3>
+    <div class="year-btns">
+      @for (int y = 1; y <= Model.SelectedOption.Years; y++)
+      {
+        var year = y;
+        var isActiveYear = Model.SelectedYear == year;
+        <a href="?SelectedStudyType=@Model.SelectedStudyType&SelectedSection=@Model.SelectedSection&SelectedYear=@year"
+           class="year-btn @(isActiveYear ? "year-btn--active" : "")">
+          Anul @romani[year - 1]
+        </a>
+      }
+    </div>
+  }
+
+  @if (!string.IsNullOrEmpty(Model.SelectedSection) && Model.SelectedYear.HasValue)
+  {
+    <hr class="divider" />
+    <h3 class="year-title">@Model.SelectedSection — Anul @romani[Model.SelectedYear.Value - 1]</h3>
+
+    <ul id="courses-list" class="drag-list">
+      @foreach (var course in Model.Courses)
+      {
+        <li data-id="@course.Id" class="drag-item">
+          <span class="drag-handle">⠿</span>
+
+          <span class="item-view-@course.Id item-name">
+            @if (!string.IsNullOrEmpty(course.ShortName))
+            {
+              <span class="course-short-badge">@course.ShortName</span>
+            }
+            @course.Name
+          </span>
+
+          <form class="item-edit-@course.Id" method="post" asp-page-handler="Edit"
+                style="display:none; gap:0.5rem; align-items:center; flex: 1;">
+            <input type="hidden" name="id" value="@course.Id" />
+            <input type="hidden" name="studyType" value="@Model.SelectedStudyType" />
+            <input type="hidden" name="sectionName" value="@Model.SelectedSection" />
+            <input type="hidden" name="year" value="@Model.SelectedYear" />
+            <input type="text" name="shortName" value="@course.ShortName"
+                   class="edit-input edit-input--short" placeholder="ex: BD" maxlength="5" />
+            <input type="text" name="name" value="@course.Name"
+                   class="edit-input" required />
+            <button type="submit" class="btn-save">✓</button>
+            <button type="button" class="btn-cancel"
+                    onclick="cancelEdit(@course.Id)">✕</button>
+          </form>
+
+          <div class="item-actions">
+            <button type="button" class="btn-action"
+                    onclick="startEdit(@course.Id)">✏️</button>
+            <form method="post" asp-page-handler="Delete" style="display:inline;">
+              <input type="hidden" name="id" value="@course.Id" />
+              <input type="hidden" name="studyType" value="@Model.SelectedStudyType" />
+              <input type="hidden" name="sectionName" value="@Model.SelectedSection" />
+              <input type="hidden" name="year" value="@Model.SelectedYear" />
+              <button type="submit" class="btn-action btn-action--danger"
+                      onclick="return confirm('Ștergi?')">🗑️</button>
+            </form>
+          </div>
+        </li>
+      }
+    </ul>
+
+    <form method="post" asp-page-handler="Add" class="add-form">
+      <input type="hidden" name="studyType" value="@Model.SelectedStudyType" />
+      <input type="hidden" name="sectionName" value="@Model.SelectedSection" />
+      <input type="hidden" name="year" value="@Model.SelectedYear" />
+      <input type="text" name="shortName" class="add-input add-input--short"
+             placeholder="BD" maxlength="5" />
+      <input type="text" name="name" class="add-input"
+             placeholder="ex: Baze de Date" required />
+      <button type="submit" class="btn-add">+ Adaugă</button>
+    </form>
+  }
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+function startEdit(id) {
+  document.querySelector('.item-view-' + id).style.display = 'none';
+  document.querySelector('.item-edit-' + id).style.display = 'flex';
+}
+
+function cancelEdit(id) {
+  document.querySelector('.item-view-' + id).style.display = '';
+  document.querySelector('.item-edit-' + id).style.display = 'none';
+}
+
+const coursesList = document.getElementById('courses-list');
+if (coursesList) {
+  Sortable.create(coursesList, {
+    handle: '.drag-handle',
+    animation: 150,
+    onEnd: function() {
+      const ids = [...coursesList.querySelectorAll('[data-id]')]
+        .map(li => li.dataset.id).join(',');
+      fetch('?handler=Reorder&SelectedStudyType=@Model.SelectedStudyType&SelectedSection=@Model.SelectedSection&SelectedYear=@Model.SelectedYear', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+        },
+        body: 'ids=' + ids
+      });
+    }
+  });
+}
+</script>
+
+@Html.AntiForgeryToken()
+
+<style>
+.admin-page { padding: 2rem; max-width: 900px; font-family: 'Segoe UI', system-ui, sans-serif; }
+.admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.admin-title { font-size: 1.5rem; font-weight: 800; color: #0f1f3d; margin: 0; }
+.btn-back { background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.5rem 1rem; text-decoration: none; color: #374151; font-size: 0.875rem; }
+
+.sections-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1rem; }
+.section-title { font-size: 1rem; font-weight: 700; color: #0f1f3d; margin: 0 0 0.75rem; }
+.section-btns { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.section-btn { padding: 0.4rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 6px; text-decoration: none; color: #374151; font-size: 0.875rem; transition: all 0.15s; }
+.section-btn:hover { border-color: #0f1f3d; }
+.section-btn--active { border-color: #0f1f3d; color: #0f1f3d; font-weight: 700; background: rgba(15,31,61,0.05); }
+
+.divider { margin: 1.5rem 0; border: none; border-top: 1px solid #e5e7eb; }
+.year-title { font-size: 1rem; font-weight: 700; color: #0f1f3d; margin: 0 0 0.75rem; }
+.year-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.year-btn { padding: 0.4rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 6px; text-decoration: none; color: #374151; font-size: 0.875rem; transition: all 0.15s; }
+.year-btn--active { border-color: #f0a500; color: #c97d00; font-weight: 700; }
+
+.drag-list { list-style: none; padding: 0; margin: 0 0 1rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; overflow: hidden; background: #f9fafb; }
+.drag-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-bottom: 1px solid #f3f4f6; background: white; }
+.drag-item:last-child { border-bottom: none; }
+.drag-handle { cursor: grab; color: #9ca3af; font-size: 1.1rem; flex-shrink: 0; }
+
+.item-name { flex: 1; font-size: 0.875rem; font-weight: 500; color: #0f1f3d; display: flex; align-items: center; gap: 0.5rem; }
+.course-short-badge { background: linear-gradient(135deg, #0f1f3d, #1a3a6e); color: white; font-size: 0.7rem; font-weight: 800; padding: 0.2rem 0.5rem; border-radius: 0.375rem; letter-spacing: 0.05em; flex-shrink: 0; }
+
+.edit-input { padding: 0.35rem 0.5rem; border: 1.5px solid #0f1f3d; border-radius: 0.375rem; font-size: 0.875rem; font-family: inherit; }
+.edit-input:not(.edit-input--short) { flex: 1; }
+.edit-input--short { width: 60px; flex: none; text-align: center; font-weight: 700; }
+
+.item-actions { display: flex; gap: 0.375rem; flex-shrink: 0; margin-left: auto; }
+.btn-action { background: none; border: 1px solid #e5e7eb; border-radius: 0.375rem; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 0.8rem; transition: all 0.15s; }
+.btn-action:hover { background: #f3f4f6; }
+.btn-action--danger { border-color: #fca5a5; color: #dc2626; }
+.btn-action--danger:hover { background: #fef2f2; }
+.btn-save { background: #10b981; color: white; border: none; border-radius: 0.375rem; padding: 0.3rem 0.625rem; cursor: pointer; font-size: 0.875rem; }
+.btn-cancel { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; border-radius: 0.375rem; padding: 0.3rem 0.625rem; cursor: pointer; font-size: 0.875rem; }
+
+.add-form { display: flex; gap: 0.75rem; align-items: center; }
+.add-input { padding: 0.625rem 0.875rem; border: 1.5px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.875rem; font-family: inherit; }
+.add-input:not(.add-input--short) { flex: 1; }
+.add-input--short { width: 70px; flex: none; text-align: center; font-weight: 700; }
+.add-input:focus { outline: none; border-color: #0f1f3d; }
+.btn-add { background: #0f1f3d; color: white; border: none; border-radius: 0.5rem; padding: 0.625rem 1.25rem; font-size: 0.875rem; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.btn-add:hover { background: #1a3460; }
+</style>
