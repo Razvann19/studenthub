@@ -1,0 +1,50 @@
+<div class="static-page">
+
+  <header class="static-header">
+    <div class="static-header-content" (click)="goHome()">
+      <img src="assets/logo.svg" alt="StudentHub" class="static-logo-img" />
+      <span class="static-logo-text">
+        <span class="logo-student">Student</span><span class="logo-hub">Hub</span>
+      </span>
+    </div>
+  </header>
+
+  <main class="static-content">
+    <div class="static-container">
+
+      <span class="static-badge">Ajutor</span>
+      <h1 class="static-title">Întrebări frecvente</h1>
+      <p class="static-lead">
+        Răspunsuri rapide la cele mai comune întrebări despre StudentHub.
+      </p>
+
+      <div class="faq-list">
+        @for (item of faqs; track item.q; let i = $index) {
+          <div class="faq-item" [class.faq-item--open]="openIndex() === i">
+            <button class="faq-question" (click)="toggle(i)">
+              <span>{{ item.q }}</span>
+              <span class="faq-icon">{{ openIndex() === i ? '−' : '+' }}</span>
+            </button>
+            @if (openIndex() === i) {
+              <p class="faq-answer">{{ item.a }}</p>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="help-contact">
+        <h2>Nu ai găsit răspunsul?</h2>
+        <p>Scrie-ne și revenim cu un răspuns cât mai curând.</p>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="static-footer">
+    <div class="footer-logo">
+      <span class="logo-student">Student</span><span class="logo-hub">Hub</span>
+    </div>
+    <p class="footer-text">© 2026 StudentHub · Universitatea Politehnica Timișoara</p>
+  </footer>
+
+</div>

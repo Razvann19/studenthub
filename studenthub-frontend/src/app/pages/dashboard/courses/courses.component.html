@@ -1,0 +1,45 @@
+<div class="courses-page">
+
+  <div class="page-header">
+    <h1 class="page-title">📖 Cursurile mele</h1>
+    @if (sectionLabel) {
+      <span class="section-badge">{{ sectionLabel }}</span>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="loading">
+      <div class="spinner"></div>
+    </div>
+  } @else if (!user?.section || !user?.year || !user?.studyType) {
+    <div class="empty-state">
+      <span class="empty-icon">🎓</span>
+      <p>Nu ai completat datele academice.</p>
+      <button class="btn-setup" (click)="goToEditProfile()">
+        Completează profilul
+      </button>
+    </div>
+  } @else if (courses().length === 0) {
+    <div class="empty-state">
+      <span class="empty-icon">📚</span>
+      <p>Nu există cursuri adăugate pentru secția ta.</p>
+    </div>
+  } @else {
+    <div class="courses-grid-wrapper">
+      <div class="courses-grid">
+        @for (course of courses(); track course.id; let i = $index) {
+          <div class="course-card" (click)="goToCourse(course)">
+            <div class="course-abbr">
+              {{ getShortName(course) }}
+            </div>
+            <div class="course-name">{{ course.name }}</div>
+            @if (getUnreadCount(course.id) > 0) {
+              <div class="unread-dot"></div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+</div>

@@ -1,0 +1,246 @@
+$blue: #0f1f3d;
+$orange: #f0a500;
+$orange-dark: #c97d00;
+$white: #ffffff;
+$gray-50: #f9fafb;
+$gray-100: #f3f4f6;
+$gray-200: #e5e7eb;
+$gray-500: #6b7280;
+$gray-700: #374151;
+
+.profile-page {
+  min-height: calc(100vh - 60px);
+  background: linear-gradient(135deg, #f0f4ff 0%, #fef9ee 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 1.5rem;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  font-size: 0.875rem;
+  align-self: flex-start;
+  max-width: 800px;
+  width: 100%;
+}
+
+.breadcrumb-home {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0;
+  color: $blue;
+  &:hover { opacity: 0.7; }
+}
+
+.breadcrumb-sep { color: $gray-500; }
+.breadcrumb-current { color: $gray-500; font-size: 1.1rem; }
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 4rem;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid $gray-200;
+  border-top-color: $orange;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.profile-wrapper {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: $white;
+  border-radius: 1.5rem;
+  border: 1.5px solid $gray-200;
+  padding: 2rem;
+  box-shadow: 0 4px 24px rgba(15, 31, 61, 0.06);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, $blue, $orange);
+  }
+}
+
+.profile-photo {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid $gray-200;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.profile-initials {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $blue, #1a3a6e);
+  color: $white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(15, 31, 61, 0.25);
+}
+
+.profile-name {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: $blue;
+  margin-bottom: 0.3rem;
+  letter-spacing: -0.02em;
+}
+
+.profile-email {
+  font-size: 0.875rem;
+  color: $gray-500;
+}
+
+.profile-card {
+  background: $white;
+  border-radius: 1.5rem;
+  border: 1.5px solid $gray-200;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(15, 31, 61, 0.06);
+}
+
+.profile-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid $gray-100;
+  background: $gray-50;
+
+  h2 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: $blue;
+  }
+}
+
+.btn-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: $orange;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.875rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $white;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: $orange-dark;
+    transform: translateY(-1px);
+  }
+}
+
+.profile-fields { padding: 0.25rem 0; }
+
+.profile-field {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1.75rem;
+  border-bottom: 1px solid $gray-100;
+  transition: background 0.1s;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: $gray-50; }
+}
+
+.field-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $gray-500;
+  min-width: 150px;
+  flex-shrink: 0;
+}
+
+.field-value {
+  font-size: 0.9rem;
+  color: $gray-700;
+  font-weight: 500;
+}
+
+.field-email { color: $blue; }
+@media (max-width: 768px) {
+  .profile-page {
+    padding: 1.5rem 1rem;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.5rem 1rem;
+    gap: 1rem;
+  }
+
+  .profile-name {
+    font-size: 1.2rem;
+  }
+
+  .profile-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+
+    .btn-edit {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .profile-field {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .field-label {
+    min-width: unset;
+    font-size: 0.75rem;
+  }
+
+  .field-value {
+    font-size: 0.875rem;
+  }
+}

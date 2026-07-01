@@ -1,0 +1,110 @@
+<div class="home-page">
+
+  <!-- ══ HERO ══ -->
+  <section class="hero">
+    <div class="hero-bg-dots"></div>
+    <div class="hero-content">
+
+      <div class="hero-logo">
+        <img src="assets/logo.svg" alt="StudentHub logo" class="logo-img" />
+        <div class="logo-text">
+          <span class="logo-student">Student</span><span class="logo-hub">Hub</span>
+        </div>
+      </div>
+
+      <h1 class="hero-title">
+        Totul despre viața la UPT,<br />
+        <span class="hero-title-accent">într-un singur loc</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Chat, notițe și comunitate pentru studenții<br />
+        Universității Politehnica Timișoara
+      </p>
+
+      <button class="btn-cta" (click)="goToLogin()">
+        Intră în platformă
+        <span class="btn-arrow">→</span>
+      </button>
+
+      <p class="hero-note">
+        <span class="dot"></span>
+        Acces exclusiv prin contul<b>&#64;student.upt.ro</b>
+      </p>
+
+    </div>
+  </section>
+
+  <!-- ══ PROBLEME REALE ══ -->
+  <section class="problems-section">
+    <div class="section-container">
+
+      <div class="section-header">
+        <span class="section-badge">Recunoști?</span>
+        <h2 class="section-title">Probleme cu care te confrunți zilnic</h2>
+        <p class="section-subtitle">StudentHub le rezolvă pe toate</p>
+      </div>
+
+      <div class="problems-grid">
+        @for (item of problems; track item.id) {
+          <div class="problem-card" [class.problem-card--orange]="item.color === 'orange'">
+            <div class="problem-icon">{{ item.icon }}</div>
+            <p class="problem-text">{{ item.title }}</p>
+            <div class="problem-divider"></div>
+            <p class="problem-solution">{{ item.description }}</p>
+          </div>
+        }
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ FEATURES ══ -->
+  <section class="features-section">
+    <div class="section-container">
+
+      <div class="section-header">
+        <span class="section-badge section-badge--dark">Ce oferim</span>
+        <h2 class="section-title section-title--light">Tot ce ai nevoie ca student</h2>
+      </div>
+
+      <div class="features-grid">
+        @for (feature of features; track feature.id) {
+          <div class="feature-card">
+            <div class="feature-icon">{{ feature.icon }}</div>
+            <h3 class="feature-title">{{ feature.title }}</h3>
+            <p class="feature-description">{{ feature.description }}</p>
+          </div>
+        }
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ CTA FINAL ══ -->
+  <section class="cta-section">
+    <div class="cta-content">
+      <h2 class="cta-title">Gata să te alături?</h2>
+      <p class="cta-subtitle">Conectează-te cu contul tău de student UPT</p>
+      <button class="btn-cta btn-cta--white" (click)="goToLogin()">
+        Intră în StudentHub
+        <span class="btn-arrow">→</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ══ FOOTER ══ -->
+  <footer class="footer">
+    <div class="footer-logo">
+      <span class="logo-student">Student</span><span class="logo-hub">Hub</span>
+    </div>
+    <p class="footer-text">© 2026 StudentHub · Universitatea Politehnica Timișoara</p>
+    <div class="footer-links">
+      <a (click)="goTo('/about')">Despre</a>
+      <a (click)="goTo('/help')">Ajutor</a>
+      <a (click)="goTo('/terms')">Termeni</a>
+      <a (click)="goTo('/privacy')">Confidențialitate</a>
+    </div>
+  </footer>
+
+</div>

@@ -1,0 +1,123 @@
+<app-navbar />
+
+<div class="dashboard-layout">
+  <app-sidebar />
+
+  @if (sidebarOpen()) {
+    <div class="sidebar-overlay" (click)="closeSidebar()"></div>
+  }
+
+  <main class="dashboard-main">
+    <router-outlet />
+
+    <!-- Home placeholder daca nu e nicio ruta activa -->
+    @if (isHomePage()) {
+      <div class="dashboard-home">
+
+        <!-- Banner -->
+        <div class="dashboard-banner">
+          <div class="banner-content">
+            <h1 class="banner-title">
+              Bună ziua, <span class="banner-name">{{ getFirstName() }}</span>! 👋
+            </h1>
+            <p class="banner-subtitle banner-subtitle--desktop">
+              Facultatea de Automatică și Calculatoare
+              @if (user?.studyType) { · {{ user?.studyType === 'licenta' ? 'Licență' : 'Master' }} }
+              @if (user?.section) { · Secția {{ user?.section }} }
+              @if (user?.year) { · Anul {{ user?.year }} }
+            </p>
+            <p class="banner-subtitle banner-subtitle--mobile">
+              @if (user?.studyType) { {{ user?.studyType === 'licenta' ? 'Licență' : 'Master' }} }
+              @if (user?.section) { · {{ user?.section }} }
+              @if (user?.year) { · Anul {{ user?.year }} }
+            </p>
+          </div>
+          <div class="banner-decoration">
+            <img src="assets/logo.svg" alt="" class="banner-logo" />
+          </div>
+        </div>
+        <div class="platform-online">
+          <span class="platform-online-dot"></span>
+           Studenti online: {{ platformOnlineCount() }}
+        </div>
+        <!-- Carduri rapide -->
+        <div class="quick-cards">
+          <div class="quick-card" (click)="router.navigate(['/dashboard/courses'])" style="cursor:pointer;">
+            <div class="quick-card-icon">📚</div>
+            <h3 class="quick-card-title">Cursurile mele</h3>
+            <p class="quick-card-desc">Materiale și notițe pe materii</p>
+          </div>
+          <div class="quick-card" (click)="router.navigate(['/dashboard/activities'])" style="cursor:pointer;">
+            <div class="quick-card-icon">📅</div>
+            <h3 class="quick-card-title">Activități</h3>
+            <p class="quick-card-desc">Ce se întâmplă pe campus</p>
+          </div>
+          <div class="quick-card" (click)="router.navigate(['/dashboard/cantina'])" style="cursor:pointer;">
+            <div class="quick-card-icon">🍽️</div>
+            <h3 class="quick-card-title">Cantina</h3>
+            <p class="quick-card-desc">Care este coada la cantian</p>
+          </div>
+        </div>
+
+      </div>
+    }
+  </main>
+
+  <!-- Nova floating button -->
+  @if (!isNovaFullscreen()) {
+    <button class="nova-float-btn" (click)="toggleNova()" title="Nova AI">
+      🤖
+    </button>
+  }
+
+  <!-- Nova Popup -->
+  @if (showNovaPopup()) {
+    <div class="nova-popup" (click)="$event.stopPropagation()">
+      <div class="nova-popup-header">
+        <span class="nova-popup-title">🤖 Nova AI</span>
+        <div class="nova-popup-actions">
+          <button class="nova-popup-btn" (click)="toggleNova()" title="Minimizează">−</button>
+          <button class="nova-popup-btn" (click)="openNovaFullscreen()" title="Deschide fullscreen">▢</button>
+        </div>
+      </div>
+
+      <div class="nova-popup-messages" #popupMessagesList>
+        @if (popupMessages().length === 0) {
+          <div class="nova-popup-greeting">
+            <p>Bună, {{ getFirstName() }}! 👋</p>
+            <p class="nova-popup-subtitle">Cu ce te pot ajuta azi?</p>
+          </div>
+        }
+        @if (popupExpired()) {
+          <div class="nova-popup-expired">
+            ⏱️ Conversația a expirat după o oră de inactivitate.
+          </div>
+        }
+        @for (msg of popupMessages(); track $index) {
+          <div class="nova-popup-msg" [class.nova-popup-msg--user]="msg.role === 'user'"
+               [class.nova-popup-msg--assistant]="msg.role === 'assistant'">
+            <div class="nova-popup-msg-content">{{ msg.content }}</div>
+            <span class="nova-popup-msg-time">{{ msg.time }}</span>
+          </div>
+        }
+        @if (popupSending()) {
+          <div class="nova-popup-msg nova-popup-msg--assistant">
+            <div class="nova-popup-typing">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="nova-popup-footer">
+        <input class="nova-popup-input"
+               placeholder="Întreabă orice..."
+               [(ngModel)]="popupInput"
+               (keydown)="onPopupKeydown($event)"
+               [disabled]="popupSending()" />
+        <button class="nova-popup-send" (click)="sendPopupMessage()" [disabled]="popupSending()">➤</button>
+      </div>
+    </div>
+  }
+
+</div>

@@ -1,0 +1,92 @@
+<div class="profile-page">
+
+  <div class="breadcrumb">
+    <button class="breadcrumb-home" (click)="goBack()">
+      <i class="fa-lg fa fa-home"></i>
+    </button>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-current">Profil</span>
+  </div>
+
+  @if (loading()) {
+    <div class="loading">
+      <div class="spinner"></div>
+    </div>
+  } @else {
+
+    <div class="profile-wrapper">
+
+      <!-- Header profil -->
+      <div class="profile-header">
+        <div class="profile-avatar-wrapper">
+          @if (profilePhoto()) {
+            <img [src]="profilePhoto()" alt="Foto profil" class="profile-photo" />
+          } @else {
+            <div class="profile-initials">{{ initials }}</div>
+          }
+        </div>
+        <div>
+          <h1 class="profile-name">{{ user()?.fullName }}</h1>
+          <p class="profile-email">{{ user()?.email }}</p>
+        </div>
+      </div>
+
+      <!-- Card detalii -->
+      <div class="profile-card">
+        <div class="profile-card-header">
+          <h2>Detalii utilizator</h2>
+          <button class="btn-edit" (click)="goToEdit()">✏️ Editează profilul</button>
+        </div>
+
+        <div class="profile-fields">
+
+          <div class="profile-field">
+            <span class="field-label">Nume complet</span>
+            <span class="field-value">{{ user()?.fullName ?? '—' }}</span>
+          </div>
+
+          <div class="profile-field">
+            <span class="field-label">Adresă de e-mail</span>
+            <span class="field-value field-email">{{ user()?.email ?? '—' }}</span>
+          </div>
+
+          <div class="profile-field">
+            <span class="field-label">Facultate</span>
+            <span class="field-value">{{ user()?.faculty ?? '—' }}</span>
+          </div>
+
+          <div class="profile-field">
+            <span class="field-label">Tip studiu</span>
+            <span class="field-value">
+              @if (user()?.studyType === 'licenta') { 🎓 Licență }
+              @else if (user()?.studyType === 'master') { 📚 Master }
+              @else { — }
+            </span>
+          </div>
+
+          <div class="profile-field">
+            <span class="field-label">Secție</span>
+            <span class="field-value">{{ user()?.section ?? '—' }}</span>
+          </div>
+
+          <div class="profile-field">
+            <span class="field-label">An de studiu</span>
+            <span class="field-value">
+              @if (user()?.year) { Anul {{ user()?.year }} }
+              @else { — }
+            </span>
+          </div>
+
+          <div class="profile-field">
+            <span class="field-label">Membru din</span>
+            <span class="field-value">{{ memberSince }}</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  }
+
+</div>

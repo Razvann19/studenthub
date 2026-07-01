@@ -1,0 +1,180 @@
+<div class="edit-profile-page">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <button class="breadcrumb-home" (click)="goBack()">
+      <i class="fa fa-home"></i>
+    </button>
+    <span class="breadcrumb-sep">›</span>
+    <a class="breadcrumb-link" (click)="goBack()">Profil</a>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-current">Editează profilul</span>
+  </div>
+
+  @if (loading()) {
+    <div class="loading">
+      <div class="spinner"></div>
+    </div>
+  } @else {
+
+    <div class="edit-wrapper">
+
+      <!-- ── Poza de profil ── -->
+      <div class="edit-card">
+        <div class="card-header">
+          <h2>Poza de profil</h2>
+        </div>
+        <div class="card-body photo-section">
+
+          <!-- Avatar curent -->
+          <div class="avatar-wrapper">
+            @if (previewPhotoUrl()) {
+              <img [src]="previewPhotoUrl()"
+                   [attr.srcset]="previewPhotoUrl() + ' 2x'"
+                   alt="Preview"
+                   class="avatar-img" />
+              <span class="avatar-badge">Preview</span>
+            } @else if (currentPhotoUrl()) {
+              <img [src]="currentPhotoUrl()" alt="Poza profil" class="avatar-img" />
+            } @else {
+              <div class="avatar-initials">{{ initials }}</div>
+            }
+          </div>
+
+          <!-- Actiuni poza -->
+          <div class="photo-actions">
+            <label class="btn btn-primary" for="photo-input">
+              📷 Alege poza
+            </label>
+            <input
+              id="photo-input"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              (change)="onFileSelected($event)"
+              style="display:none" />
+
+            @if (previewPhotoUrl()) {
+              <button
+                class="btn btn-orange"
+                (click)="uploadPhoto()"
+                [disabled]="uploadingPhoto()">
+                @if (uploadingPhoto()) {
+                  <span class="btn-spinner"></span> Se încarcă...
+                } @else {
+                  ✅ Salvează poza
+                }
+              </button>
+            }
+
+            @if (currentPhotoUrl() && !previewPhotoUrl()) {
+              <button class="btn btn-danger" (click)="removePhoto()">
+                🗑️ Șterge poza
+              </button>
+            }
+
+            <p class="photo-hint">JPG, PNG sau WEBP · Max 5MB</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Date academice ── -->
+      <div class="edit-card">
+        <div class="card-header">
+          <h2>Date academice</h2>
+        </div>
+        <div class="card-body">
+
+          <!-- Tip studiu -->
+          <div class="form-group">
+            <label class="form-label">Tip studiu</label>
+            <div class="radio-group">
+              <button
+                class="radio-btn"
+                [class.radio-btn--active]="studyType === 'licenta'"
+                (click)="studyType = 'licenta'; onTipStudiuChange()">
+                <span class="radio-icon">🎓</span>
+                <span class="radio-label">Licență</span>
+              </button>
+              <button
+                class="radio-btn"
+                [class.radio-btn--active]="studyType === 'master'"
+                (click)="studyType = 'master'; onTipStudiuChange()">
+                <span class="radio-icon">📚</span>
+                <span class="radio-label">Master</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Sectie -->
+          <div class="form-group" [class.form-group--disabled]="!studyType">
+            <label class="form-label">Secție</label>
+            <select class="form-select" [(ngModel)]="section"
+                    [disabled]="!studyType"
+                    (ngModelChange)="onSectionChange()">
+              <option value="" disabled>Selectează secția</option>
+              @for (s of sectiiDisponibile(); track s) {
+                <option [value]="s">{{ s }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- An -->
+          <div class="form-group" [class.form-group--disabled]="!section">
+            <label class="form-label">An</label>
+            <select class="form-select" [(ngModel)]="an" [disabled]="!section">
+              <option value="" disabled>Selectează anul</option>
+              @for (a of aniDisponibili(); track a) {
+                <option [value]="a">{{ a }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Eroare / Succes -->
+          @if (error()) {
+            <div class="alert alert-error">{{ error() }}</div>
+          }
+          @if (success()) {
+            <div class="alert alert-success">{{ success() }}</div>
+          }
+
+          <!-- Butoane -->
+          <div class="form-actions">
+            <button
+              class="btn btn-orange"
+              (click)="saveProfile()"
+              [disabled]="saving()">
+              @if (saving()) {
+                <span class="btn-spinner"></span> Se salvează...
+              } @else {
+                💾 Salvează modificările
+              }
+            </button>
+            <button class="btn btn-secondary" (click)="goBack()">
+              Anulează
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Securitate ── -->
+      <div class="edit-card">
+        <div class="card-header">
+          <h2>Securitate</h2>
+        </div>
+        <div class="card-body">
+          <p class="security-desc">
+            Parola contului tău UPT este gestionată de Universitatea Politehnica Timișoara.
+          </p>
+          <button class="btn btn-secondary" (click)="openResetPassword()">
+            🔑 Instrucțiuni resetare parolă
+            <span class="btn-external">↗</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  }
+
+</div>

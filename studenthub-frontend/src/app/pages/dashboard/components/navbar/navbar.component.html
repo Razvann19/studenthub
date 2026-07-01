@@ -1,0 +1,90 @@
+<nav class="navbar">
+
+  <!-- Stanga: Logo UPT + Hamburger -->
+  <div class="navbar-left">
+    <div class="navbar-logo" (click)="goToDashboard()" style="cursor:pointer;">
+      <div class="logo-upt">
+        <img src="assets/logo.svg" alt="StudentHub" class="logo-img" />
+        <span class="logo-text">
+        <span class="logo-student">Student</span><span class="logo-hub">Hub</span>
+      </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dreapta: Limba + User -->
+  <div class="navbar-right">
+
+    <!-- Selector limba -->
+    <div class="lang-menu-wrapper">
+      <button class="lang-btn" (click)="toggleLangMenu()">
+        <span class="lang-flag">{{ currentLang() === 'RO' ? '🇷🇴' : '🇬🇧' }}</span>
+        <span class="lang-label">{{ currentLang() }}</span>
+        <span class="dropdown-arrow" [class.dropdown-arrow--open]="langMenuOpen()">▾</span>
+      </button>
+
+      @if (langMenuOpen()) {
+        <div class="dropdown-menu">
+          <button class="dropdown-item" [class.dropdown-item--active]="currentLang() === 'RO'" (click)="setLang('RO')">
+            <span>🇷🇴</span> Română
+          </button>
+          <button class="dropdown-item" [class.dropdown-item--active]="currentLang() === 'EN'" (click)="setLang('EN')">
+            <span>🇬🇧</span> English
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- User menu -->
+    <div class="user-menu-wrapper">
+      <button class="user-btn" (click)="toggleUserMenu()">
+        <div class="user-avatar">
+          @if (profilePhotoUrl()) {
+            <img [src]="profilePhotoUrl()" alt="Profil" class="avatar-img" />
+          } @else {
+            {{ initials }}
+          }
+        </div>
+        <span class="user-name">{{ displayName }}</span>
+        <span class="dropdown-arrow" [class.dropdown-arrow--open]="userMenuOpen()">▾</span>
+      </button>
+
+      @if (userMenuOpen()) {
+        <div class="dropdown-menu dropdown-menu--right">
+          <div class="dropdown-header">
+            <div class="user-avatar">
+              @if (profilePhotoUrl()) {
+                <img
+                  [src]="profilePhotoUrl()"
+                  [attr.srcset]="profilePhotoUrl() + ' 2x'"
+                  alt="Profil"
+                  class="avatar-img"
+                  width="34"
+                  height="34" />
+              } @else {
+                {{ initials }}
+              }
+            </div>
+            <div>
+              <p class="dropdown-name">{{ user?.fullName }}</p>
+              <p class="dropdown-email">{{ user?.email }}</p>
+            </div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item" (click)="goToProfile()">
+            <span>👤</span> Profilul meu
+          </button>
+          <button class="dropdown-item" (click)="goToEditProfile()">
+            <span>✏️</span> Editează profilul
+          </button>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item dropdown-item--danger" (click)="logout()">
+            <span><i class="fa fa-sign-out-alt"></i></span> Deconectare
+          </button>
+        </div>
+      }
+    </div>
+
+  </div>
+
+</nav>

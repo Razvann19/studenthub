@@ -1,0 +1,139 @@
+$blue: #0f1f3d;
+$orange: #f0a500;
+$white: #ffffff;
+$gray-50: #f9fafb;
+$gray-100: #f3f4f6;
+$gray-200: #e5e7eb;
+$gray-500: #6b7280;
+$gray-700: #374151;
+
+.sidebar {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 220px;
+  height: calc(100vh - 60px);
+  background: $white;
+  border-right: 1px solid $gray-200;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 50;
+}
+
+// ── User info ─────────────────────────────────────
+.sidebar-user {
+  padding: 1.25rem 1rem 1rem;
+  border-bottom: 1px solid $gray-200;
+}
+
+.sidebar-user-badge {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(15, 31, 61, 0.08);
+  color: $blue;
+  border-radius: 2rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+
+  &--section {
+    background: rgba(240, 165, 0, 0.12);
+    color: #c97d00;
+  }
+}
+
+.sidebar-faculty {
+  font-size: 0.75rem;
+  color: $gray-500;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+// ── Navigatie ─────────────────────────────────────
+.sidebar-nav {
+  padding: 0.75rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.75rem;
+  text-decoration: none;
+  color: $gray-700;
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: $gray-100;
+    color: $blue;
+  }
+
+  &--active {
+    background: rgba(15, 31, 61, 0.08);
+    color: $blue;
+    font-weight: 600;
+
+    .nav-icon {
+      transform: scale(1.1);
+    }
+  }
+}
+
+.nav-icon {
+  font-size: 1.1rem;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+
+.nav-label {
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+}
+.sidebar-logout {
+  margin: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.75rem;
+  background: none;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #fef2f2;
+  }
+
+  i {
+    width: 20px;
+    text-align: center;
+  }
+}

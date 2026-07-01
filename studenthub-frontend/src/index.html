@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <title>StudentHub</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    #google_translate_element { display: none; }
+    .goog-te-banner-frame { display: none !important; }
+    body { top: 0 !important; }
+    .goog-te-gadget { font-size: 0 !important; }
+    .goog-te-gadget select { display: none; }
+
+    .goog-te-banner-frame.skiptranslate { display: none !important; }
+    .goog-te-ftab-float { display: none !important; }
+    iframe.goog-te-banner-frame { display: none !important; }
+    .goog-tooltip { display: none !important; }
+    .goog-tooltip:hover { display: none !important; }
+    .goog-text-highlight { background-color: transparent !important; box-shadow: none !important; }
+    #goog-gt-tt { display: none !important; }
+    .goog-te-balloon-frame { display: none !important; }
+  </style>
+</head>
+<body>
+<div id="google_translate_element"></div>
+<app-root></app-root>
+
+<script>
+  function hideGoogleTranslate() {
+    // Ascunde iframe-ul banner
+    const banners = document.querySelectorAll('.goog-te-banner-frame, .skiptranslate');
+    banners.forEach(el => {
+      el.style.display = 'none';
+      el.style.visibility = 'hidden';
+    });
+
+    // Reseteza body top
+    document.body.style.top = '0px';
+    document.body.style.position = 'static';
+
+    // Ascunde div-ul container
+    const gtDiv = document.getElementById('google_translate_element');
+    if (gtDiv) gtDiv.style.display = 'none';
+  }
+
+  // Ruleaza des la inceput
+  setInterval(hideGoogleTranslate, 100);
+
+  // Si la orice modificare DOM
+  const observer = new MutationObserver(hideGoogleTranslate);
+  observer.observe(document.body, { childList: true, subtree: true });
+</script>
+<script type="text/javascript">
+  function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+      pageLanguage: 'ro',
+      includedLanguages: 'en,ro',
+      autoDisplay: false
+    }, 'google_translate_element');
+  }
+
+  window.triggerTranslate = function(lang) {
+    if (lang === 'RO') {
+      // Reseteaza la romana
+      const iframe = document.querySelector('.goog-te-banner-frame');
+      if (iframe) {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        const closeBtn = iframeDoc.querySelector('.goog-close-link');
+        if (closeBtn) closeBtn.click();
+      }
+
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=' + location.hostname;
+      location.reload();
+      return;
+    }
+
+    const select = document.querySelector('.goog-te-combo');
+    if (select) {
+      select.value = lang.toLowerCase();
+      select.dispatchEvent(new Event('change'));
+    }
+  }
+</script>
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</body>
+</html>

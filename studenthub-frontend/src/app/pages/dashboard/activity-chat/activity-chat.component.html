@@ -1,0 +1,379 @@
+<div class="chat-page" (click)="closeMenus()">
+
+  <div class="chat-header">
+    @if (searchOpen()) {
+      <div class="search-bar" (click)="$event.stopPropagation()">
+        <input class="search-input"
+               type="text"
+               placeholder="Caută mesaje..."
+               [value]="searchQuery()"
+               (input)="onSearchInput($any($event.target).value)"
+               (keydown.escape)="toggleSearch()" />
+        @if (searchResults().length > 0) {
+          <span class="search-count">{{ searchIndex() + 1 }}/{{ searchResults().length }}</span>
+          <button class="search-nav-btn" (click)="searchPrev()">↑</button>
+          <button class="search-nav-btn" (click)="searchNext()">↓</button>
+        }
+        <button class="search-close-btn" (click)="toggleSearch()">✕</button>
+      </div>
+    } @else {
+      <button class="back-btn" (click)="goBack()">← Activități</button>
+      <div class="chat-header-info">
+        <h2 class="chat-title">{{ activityName() }}</h2>
+        @if (connected$ | async) {
+          <span class="status-dot status-dot--online"></span>
+          <span class="online-count">{{ hubService.onlineCount$ | async }} online</span>
+        } @else {
+          <span class="status-dot status-dot--offline"></span>
+        }
+      </div>
+      <button class="search-btn" (click)="toggleSearch(); $event.stopPropagation()">🔍</button>
+    }
+  </div>
+
+  <div class="messages-list" #messagesList (scroll)="onScroll($event)">
+
+    <div class="floating-date" [class.floating-date--visible]="floatingDateVisible()">
+      {{ floatingDate() }}
+    </div>
+
+    @if (loading()) {
+      <div class="chat-loading"><div class="spinner"></div></div>
+    } @else {
+      @let msgs = messages$ | async;
+      @let pollList = polls$ | async;
+
+      @if ((!msgs || msgs.length === 0) && (!pollList || pollList.length === 0)) {
+        <div class="chat-empty">
+          <span>💬</span>
+          <p>Niciun mesaj încă. Fii primul!</p>
+        </div>
+      } @else {
+        @let combined = getCombinedItems(msgs ?? [], pollList ?? []);
+        @for (item of combined; track item.id; let i = $index) {
+
+          @if (i === 0 || !isSameDay(combined[i-1].createdAt, item.createdAt)) {
+            <div class="date-separator">
+              <span class="date-separator-text">{{ formatDateLabel(item.createdAt) }}</span>
+            </div>
+          }
+
+          @if (item._type === 'poll') {
+            <div class="poll-card" [class.poll-card--own]="isOwnPoll(item)">
+              <div class="poll-header">
+                <div class="poll-meta">
+                  <div class="message-avatar">
+                    @if (isOwnPoll(item) && profilePhotoUrl) {
+                      <img [src]="profilePhotoUrl" alt="Profil" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />
+                    } @else {
+                      {{ getInitials(item.userName) }}
+                    }
+                  </div>
+                  <div class="poll-meta-info">
+                    <span class="poll-author">{{ item.userName }}</span>
+                    <span class="poll-time">{{ formatTime(item.createdAt) }}</span>
+                  </div>
+                </div>
+                @if (isOwnPoll(item)) {
+                  <div class="poll-actions">
+                    <button class="poll-action-btn" (click)="startEditPoll(item); $event.stopPropagation()">✏️</button>
+                    <button class="poll-action-btn poll-action-btn--danger" (click)="deletePoll(item.id); $event.stopPropagation()">🗑️</button>
+                  </div>
+                }
+              </div>
+
+              @if (editingPollId() === item.id) {
+                <div class="poll-edit-question" (click)="$event.stopPropagation()">
+                  <input type="text" class="poll-edit-input"
+                         [(ngModel)]="editingPollQuestion"
+                         (keydown.enter)="submitEditPoll()"
+                         (keydown.escape)="editingPollId.set(null)" />
+                  <button class="btn-save-inline" (click)="submitEditPoll()">✓</button>
+                  <button class="btn-cancel-inline" (click)="editingPollId.set(null)">✕</button>
+                </div>
+              } @else {
+                <div class="poll-question">
+                  📊 {{ item.question }}
+                  @if (item.isEdited) { <span class="poll-edited">editat</span> }
+                </div>
+              }
+
+              <div class="poll-options">
+                @for (option of item.options; track option.id) {
+                  <div class="poll-option" (click)="vote(item.id, option.id)">
+                    <div class="poll-option-top">
+                      @if (editingOptionId() === option.id) {
+                        <div class="option-edit-row" (click)="$event.stopPropagation()">
+                          <input type="text" class="poll-edit-input"
+                                 [(ngModel)]="editingOptionText"
+                                 (keydown.enter)="submitEditOption()"
+                                 (keydown.escape)="editingOptionId.set(null)" />
+                          <button class="btn-save-inline" (click)="submitEditOption()">✓</button>
+                          <button class="btn-cancel-inline" (click)="editingOptionId.set(null)">✕</button>
+                        </div>
+                      } @else {
+                        <div class="option-left">
+                          <div class="option-radio"
+                               [class.option-radio--voted]="getMyVote(item) === option.id">
+                            @if (getMyVote(item) === option.id) { ✓ }
+                          </div>
+                          <span class="option-text">{{ option.text }}</span>
+                          @if (canEditOption(option, item)) {
+                            <button class="option-edit-btn"
+                                    (click)="startEditOption(option); $event.stopPropagation()">✏️</button>
+                          }
+                        </div>
+                        <span class="option-count"
+                              (click)="toggleVoters(option.id); $event.stopPropagation()">
+                          {{ option.votes.length }} {{ option.votes.length === 1 ? 'vot' : 'voturi' }}
+                        </span>
+                      }
+                    </div>
+
+                    @if (editingOptionId() !== option.id) {
+                      <div class="poll-progress">
+                        <div class="poll-progress-bar"
+                             [class.poll-progress-bar--voted]="getMyVote(item) === option.id"
+                             [style.width.%]="getVotePercent(option, item)">
+                        </div>
+                      </div>
+                      <div class="poll-percent">{{ getVotePercent(option, item) }}%</div>
+                    }
+
+                    @if (expandedVoters() === option.id && option.votes.length > 0) {
+                      <div class="voters-list" (click)="$event.stopPropagation()">
+                        @for (vote of option.votes; track vote.id) {
+                          <span class="voter-chip">{{ vote.userName }}</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+
+                @if (item.allowUserOptions) {
+                  @if (addingOptionToPollId() === item.id) {
+                    <div class="add-option-row" (click)="$event.stopPropagation()">
+                      <input type="text" class="poll-edit-input"
+                             [(ngModel)]="newOptionText"
+                             placeholder="Opțiune nouă..."
+                             (keydown.enter)="submitAddOption(item.id)"
+                             (keydown.escape)="addingOptionToPollId.set(null)" />
+                      <button class="btn-save-inline" (click)="submitAddOption(item.id)">✓</button>
+                      <button class="btn-cancel-inline" (click)="addingOptionToPollId.set(null)">✕</button>
+                    </div>
+                  } @else {
+                    <button class="add-option-btn" (click)="startAddOption(item.id); $event.stopPropagation()">
+                      ✚ Adaugă opțiune
+                    </button>
+                  }
+                }
+              </div>
+
+              <div class="poll-footer">
+                <span class="poll-total">{{ getTotalVotes(item) }} voturi totale</span>
+                @if (getMyVote(item)) {
+                  <span class="poll-voted-badge">✓ Ai votat</span>
+                }
+              </div>
+            </div>
+          }
+
+          @if (item._type === 'message') {
+            <div class="message-wrapper"
+                 [class.message-wrapper--own]="isOwnMessage(item)"
+                 [attr.data-date]="item.createdAt"
+                 [attr.data-msg-id]="item.id">
+
+              @if (!isOwnMessage(item)) {
+                <div class="message-avatar">{{ getInitials(item.userName) }}</div>
+              }
+
+              <div class="message-bubble-group">
+                @if (!isOwnMessage(item)) {
+                  <span class="message-name">{{ item.userName }}</span>
+                }
+
+                <div class="message-with-actions">
+                  <div class="message-bubble"
+                       [class.message-bubble--own]="isOwnMessage(item)"
+                       [class.message-bubble--match]="isSearchMatch(item.id)"
+                       [class.message-bubble--current]="isCurrentSearchResult(item.id)">
+                    <button class="msg-menu-btn" (click)="toggleMenu(item.id, $event)">
+                      <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+                        <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+
+                    @if (item.replyToUserName) {
+                      <div class="reply-preview">
+                        <span class="reply-preview-name">{{ item.replyToUserName }}</span>
+                        <span class="reply-preview-text">{{ item.replyToText }}</span>
+                      </div>
+                    }
+
+                    @if (item.isEdited) {
+                      <span class="message-edited">editat</span>
+                    }
+
+                    <div class="message-content-row">
+                      <p class="message-text">{{ item.text }}</p>
+                      <span class="message-time">{{ formatTime(item.createdAt) }}</span>
+                    </div>
+                  </div>
+
+                  <button class="msg-emoji-btn" (click)="toggleEmoji(item.id, $event)">🙂</button>
+
+                  @if (activeEmojiId() === item.id) {
+                    <div class="emoji-picker" (click)="$event.stopPropagation()">
+                      @for (emoji of quickEmojis; track emoji) {
+                        <button class="emoji-btn"
+                                [class.emoji-btn--active]="hasMyReaction(item, emoji)"
+                                (click)="toggleMessageReaction(item.id, emoji)">
+                          {{ emoji }}
+                        </button>
+                      }
+                      <button class="emoji-btn emoji-btn--plus" (click)="openEmojiLibrary(item.id, $event)">➕</button>
+                    </div>
+                  }
+                </div>
+
+                @if (item.reactions && item.reactions.length > 0) {
+                  <div class="reactions-row">
+                    @for (reaction of item.reactions; track reaction.emoji) {
+                      <button class="reaction-chip"
+                              [class.reaction-chip--mine]="hasMyReaction(item, reaction.emoji)"
+                              (click)="toggleMessageReaction(item.id, reaction.emoji)">
+                        {{ reaction.emoji }} {{ reaction.count }}
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+        }
+      }
+    }
+
+    @if (activeMenuId() && getActiveMsg()) {
+      <div class="msg-menu-fixed"
+           [style.top]="menuPosition().top"
+           [style.left]="menuPosition().left"
+           (click)="$event.stopPropagation()">
+        <div class="msg-menu-emoji-row">
+          @for (emoji of quickEmojis; track emoji) {
+            <button class="emoji-btn"
+                    [class.emoji-btn--active]="hasMyReaction(getActiveMsg(), emoji)"
+                    (click)="toggleMessageReaction(activeMenuId()!, emoji)">
+              {{ emoji }}
+            </button>
+          }
+          <button class="emoji-btn emoji-btn--plus" (click)="openEmojiLibrary(activeMenuId()!, $event)">➕</button>
+        </div>
+        <div class="msg-menu-divider"></div>
+        <button class="msg-menu-item" (click)="startReply(getActiveMsg())">💬 Răspunde</button>
+        @if (!isOwnMessage(getActiveMsg()!)) {
+          <button class="msg-menu-item msg-menu-item--report"
+                  (click)="reportMessage(activeMenuId()!)"
+                  [disabled]="reportedMessageIds().has(activeMenuId()!)">
+            🚩 Raportează
+            @if (getActiveMsg()!.reportCount > 0) {
+              <span class="report-count">{{ getActiveMsg()!.reportCount }}</span>
+            }
+          </button>
+        }
+        @if (isOwnMessage(getActiveMsg())) {
+          <button class="msg-menu-item" (click)="startEditMessage(getActiveMsg())">✏️ Editează</button>
+          <button class="msg-menu-item msg-menu-item--danger" (click)="deleteMessage(activeMenuId()!)">🗑️ Șterge</button>
+        }
+      </div>
+    }
+
+    @if (showEmojiLibrary()) {
+      <div class="emoji-library-overlay" (click)="closeEmojiLibrary()">
+        <div class="emoji-library-popup"
+             [style.top]="emojiLibraryPosition().top"
+             [style.left]="emojiLibraryPosition().left"
+             (click)="$event.stopPropagation()">
+          <app-emoji-picker (emojiSelect)="onEmojiSelect($event)" />
+        </div>
+      </div>
+    }
+
+  </div>
+
+  @if (showPollForm()) {
+    <div class="poll-form" (click)="$event.stopPropagation()">
+      <div class="poll-form-header">
+        <span class="poll-form-title">📊 Sondaj nou</span>
+        <button class="poll-form-close" (click)="togglePollForm()">✕</button>
+      </div>
+
+      <input type="text" class="poll-form-input"
+             [(ngModel)]="pollQuestion"
+             placeholder="Întrebarea sondajului..." />
+
+      <div class="poll-form-options">
+        @for (opt of pollOptions; track $index; let i = $index) {
+          <div class="poll-form-option-row">
+            <input type="text" class="poll-form-input poll-form-input--option"
+                   [(ngModel)]="pollOptions[i].value"
+                   [placeholder]="'Opțiunea ' + (i + 1)" />
+            @if (pollOptions.length > 2) {
+              <button class="poll-form-remove" (click)="removePollOption(i)">✕</button>
+            }
+          </div>
+        }
+        @if (pollOptions.length < 10) {
+          <button class="add-option-btn" (click)="addPollOption()">✚ Adaugă opțiune</button>
+        }
+      </div>
+
+      <label class="poll-form-checkbox">
+        <input type="checkbox" [(ngModel)]="pollAllowUserOptions" />
+        <span>Permite utilizatorilor să adauge opțiuni</span>
+      </label>
+
+      <button class="poll-form-submit"
+              (click)="submitPoll()"
+              [disabled]="isSubmitPollDisabled()">
+        Publică sondajul
+      </button>
+    </div>
+  }
+
+  <div class="chat-input-area">
+    @if (editingMessageId()) {
+      <div class="context-bar context-bar--edit">
+        <span>✏️ Editezi mesajul</span>
+        <button (click)="editingMessageId.set(null); chatText = ''">✕</button>
+      </div>
+    }
+    @if (replyingTo()) {
+      <div class="context-bar context-bar--reply">
+        <span>💬 {{ replyingTo()!.userName }}: {{ replyingTo()!.text }}</span>
+        <button (click)="replyingTo.set(null)">✕</button>
+      </div>
+    }
+    <div class="input-row">
+      <button class="poll-btn" (click)="togglePollForm(); $event.stopPropagation()"
+              [class.poll-btn--active]="showPollForm()" title="Creează sondaj">
+        📊
+      </button>
+      <textarea #textInput class="message-input"
+                [(ngModel)]="chatText"
+                (keydown)="onChatKeydown($event)"
+                [placeholder]="editingMessageId() ? 'Editează mesajul...' : 'Scrie un mesaj...'"
+                rows="1"></textarea>
+      <button class="send-btn" (click)="sendMessage()" [disabled]="!chatText.trim()">
+        {{ editingMessageId() ? '✓' : '➤' }}
+      </button>
+    </div>
+  </div>
+
+  @if (toastMessage()) {
+    <div class="toast-notification">{{ toastMessage() }}</div>
+  }
+
+</div>

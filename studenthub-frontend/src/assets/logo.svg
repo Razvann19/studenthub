@@ -1,0 +1,27 @@
+<svg width="120" height="100" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Bula chat deasupra cartii drepte -->
+  <rect x="62" y="4" width="34" height="22" rx="8" fill="white"/>
+  <polygon points="68,26 78,26 72,34" fill="white"/>
+  <circle cx="71" cy="15" r="3" fill="#0f1f3d"/>
+  <circle cx="79" cy="15" r="3" fill="#0f1f3d"/>
+  <circle cx="87" cy="15" r="3" fill="#0f1f3d"/>
+
+  <!-- Carte stanga — alba -->
+  <rect x="20" y="32" width="38" height="52" rx="4" fill="white"/>
+  <!-- Linii pagini stanga -->
+  <line x1="28" y1="48" x2="50" y2="48" stroke="#0f1f3d" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+  <line x1="28" y1="57" x2="50" y2="57" stroke="#0f1f3d" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+  <line x1="28" y1="66" x2="50" y2="66" stroke="#0f1f3d" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+
+  <!-- Spine -->
+  <rect x="56" y="30" width="8" height="56" rx="3" fill="#c97d00"/>
+
+  <!-- Carte dreapta — portocalie -->
+  <rect x="62" y="32" width="38" height="52" rx="4" fill="#f0a500"/>
+  <!-- Linii pagini dreapta -->
+  <line x1="70" y1="48" x2="92" y2="48" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+  <line x1="70" y1="57" x2="92" y2="57" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+  <line x1="70" y1="66" x2="84" y2="66" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+
+</svg>

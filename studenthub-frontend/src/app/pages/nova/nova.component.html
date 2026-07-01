@@ -1,0 +1,180 @@
+<div class="nova-page" (click)="closeMenus()">
+
+  <!-- Sidebar -->
+  <div class="nova-sidebar" [class.nova-sidebar--open]="mobileSidebarOpen()">
+
+    <!-- Logo -->
+    <div class="nova-logo">
+      <span class="nova-logo-icon">🤖</span>
+      <span class="nova-logo-text">Nova AI</span>
+      <button class="nova-back-btn" (click)="handleBackBtn()" title="Înapoi">✕</button>
+    </div>
+
+    <!-- New Chat -->
+    <button class="nova-new-chat" (click)="newChat()">
+      <span>✏️</span> Chat nou
+    </button>
+
+    <!-- Categories -->
+    <div class="nova-categories">
+      <button class="nova-cat-btn" [class.nova-cat-btn--active]="activeCategory() === 'general'"
+              (click)="setCategory('general')">
+        💬 General
+      </button>
+      <button class="nova-cat-btn" [class.nova-cat-btn--active]="activeCategory() === 'mental'"
+              (click)="setCategory('mental')">
+        🧠 Mental Health
+      </button>
+      <button class="nova-cat-btn" [class.nova-cat-btn--active]="activeCategory() === 'notes'"
+              (click)="setCategory('notes')">
+        📝 Notițe
+      </button>
+    </div>
+
+    <!-- Conversations -->
+    <div class="nova-conversations">
+      @if (loadingConversations()) {
+        <div class="nova-conv-loading">Se încarcă...</div>
+      } @else if (groupedConversations.length === 0) {
+        <div class="nova-conv-empty">Nicio conversație încă.</div>
+      } @else {
+        @for (group of groupedConversations; track group.label) {
+          <div class="nova-conv-group">
+            <span class="nova-conv-group-label">{{ group.label }}</span>
+            @for (conv of group.items; track conv.id) {
+              <div class="nova-conv-item"
+                   [class.nova-conv-item--active]="activeConversation()?.id === conv.id"
+                   (click)="openConversation(conv)">
+
+                @if (renamingId() === conv.id) {
+                  <input class="nova-rename-input"
+                         [(ngModel)]="renameText"
+                         (keydown.enter)="submitRename(conv)"
+                         (keydown.escape)="renamingId.set(null)"
+                         (click)="$event.stopPropagation()"
+                         autofocus />
+                } @else {
+                  <span class="nova-conv-title">{{ conv.title }}</span>
+                  <button class="nova-conv-menu-btn"
+                          (click)="toggleMenu(conv.id, $event)">⋯</button>
+
+                  @if (activeMenuId() === conv.id) {
+                    <div class="nova-conv-menu" (click)="$event.stopPropagation()">
+                      <button (click)="startRename(conv, $event)">✏️ Redenumește</button>
+                      <button class="danger" (click)="deleteConversation(conv.id, $event)">🗑️ Șterge</button>
+                    </div>
+                  }
+                }
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+
+  </div>
+
+  @if (mobileSidebarOpen()) {
+    <div class="nova-mobile-overlay" (click)="mobileSidebarOpen.set(false)"></div>
+  }
+
+  <!-- Main Chat -->
+  <div class="nova-main">
+
+    @if (!activeConversation()) {
+      <!-- Welcome screen -->
+      <div class="nova-welcome">
+      <button class="nova-sidebar-toggle nova-sidebar-toggle--welcome" (click)="toggleMobileSidebar()">☰</button>
+      <div class="nova-welcome-icon">🤖</div>
+        <h1 class="nova-welcome-title">Nova AI</h1>
+        <p class="nova-welcome-subtitle">{{ getWelcomeMessage() }}</p>
+        <button class="nova-welcome-btn" (click)="newChat()">
+          Începe o conversație nouă
+        </button>
+      </div>
+    } @else {
+
+      <!-- Chat header -->
+        <!-- Chat header -->
+      <div class="nova-chat-header">
+        <button class="nova-sidebar-toggle" (click)="toggleMobileSidebar()">☰</button>
+        <div class="nova-chat-header-info">
+          <span class="nova-chat-title">{{ activeConversation()!.title }}</span>
+          <span class="nova-chat-category">{{ getCategoryLabel(activeConversation()!.category) }}</span>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="nova-messages" #messagesList>
+
+        <!-- Welcome message -->
+        <div class="nova-message nova-message--assistant">
+          <div class="nova-message-avatar">🤖</div>
+          <div class="nova-message-bubble">
+            {{ getWelcomeMessage() }}
+          </div>
+        </div>
+
+        @if (loading()) {
+          <div class="nova-loading">
+            <div class="nova-loading-dot"></div>
+            <div class="nova-loading-dot"></div>
+            <div class="nova-loading-dot"></div>
+          </div>
+        } @else {
+          @for (msg of messages(); track msg.id) {
+            <div class="nova-message"
+                 [class.nova-message--user]="msg.role === 'user'"
+                 [class.nova-message--assistant]="msg.role === 'assistant'">
+
+              @if (msg.role === 'assistant') {
+                <div class="nova-message-avatar">🤖</div>
+              }
+
+              <div class="nova-message-bubble">
+                {{ msg.content }}
+                <span class="nova-message-time">{{ formatTime(msg.createdAt) }}</span>
+              </div>
+            </div>
+          }
+        }
+
+        @if (sendingMessage()) {
+          <div class="nova-message nova-message--assistant">
+            <div class="nova-message-avatar">🤖</div>
+            <div class="nova-message-bubble nova-message-bubble--typing">
+              <div class="nova-loading-dot"></div>
+              <div class="nova-loading-dot"></div>
+              <div class="nova-loading-dot"></div>
+            </div>
+          </div>
+        }
+
+      </div>
+
+      <!-- Input -->
+      <div class="nova-input-area">
+        <div class="nova-input-row">
+          <textarea #textInput
+                    class="nova-input"
+                    [(ngModel)]="messageText"
+                    (keydown)="onKeydown($event)"
+                    placeholder="Întreabă orice..."
+                    rows="1"></textarea>
+          <button class="nova-send-btn"
+                  (click)="sendMessage()"
+                  [disabled]="!messageText.trim() || sendingMessage()">
+            @if (sendingMessage()) {
+              <span class="nova-send-spinner"></span>
+            } @else {
+              ➤
+            }
+          </button>
+        </div>
+        <p class="nova-disclaimer">Nova poate face greșeli. Verifică informațiile importante.</p>
+      </div>
+
+    }
+  </div>
+
+</div>

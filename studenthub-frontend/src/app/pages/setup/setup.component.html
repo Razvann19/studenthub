@@ -1,0 +1,108 @@
+<div class="setup-page">
+  <div class="setup-card">
+
+    <div class="setup-header">
+      <div class="setup-logo">
+        <img src="assets/logo.svg" alt="StudentHub" class="setup-logo-img" />
+        <span class="setup-logo-text">
+          <span class="logo-student">Student</span><span class="logo-hub">Hub</span>
+        </span>
+      </div>
+      <h1 class="setup-title">Bun venit! Să ne cunoaștem</h1>
+      <p class="setup-subtitle">
+        Completează profilul tău o singură dată —<br />
+        nu vei mai fi întrebat după aceasta.
+      </p>
+    </div>
+
+    <div class="setup-form">
+
+      <!-- Tip studiu -->
+      <div class="form-group">
+        <label class="form-label">Tip studiu</label>
+        <div class="radio-group">
+          <button
+            class="radio-btn"
+            [class.radio-btn--active]="tipStudiu === 'licenta'"
+            (click)="tipStudiu = 'licenta'; onTipStudiuChange()">
+            <span class="radio-icon">🎓</span>
+            <span class="radio-label">Licență</span>
+            <span class="radio-sub">1–4 ani</span>
+          </button>
+          <button
+            class="radio-btn"
+            [class.radio-btn--active]="tipStudiu === 'master'"
+            (click)="tipStudiu = 'master'; onTipStudiuChange()">
+            <span class="radio-icon">📚</span>
+            <span class="radio-label">Master</span>
+            <span class="radio-sub">1–2 ani</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Sectie -->
+      <div class="form-group" [class.form-group--disabled]="!tipStudiu">
+        <label class="form-label">
+          Secție
+          @if (!tipStudiu) {
+            <span class="form-hint">— selectează mai întâi tipul de studiu</span>
+          }
+        </label>
+        @if (loadingOptions() && tipStudiu) {
+          <div class="loading-inline">
+            <div class="spinner-sm"></div>
+            <span>Se încarcă secțiile...</span>
+          </div>
+        } @else {
+          <select
+            class="form-select"
+            [(ngModel)]="sectie"
+            [disabled]="!tipStudiu"
+            (ngModelChange)="onSectionChange()">
+            <option value="" disabled>Selectează secția</option>
+            @for (s of sectiiDisponibile(); track s) {
+              <option [value]="s">{{ s }}</option>
+            }
+          </select>
+        }
+      </div>
+
+      <!-- An -->
+      <div class="form-group" [class.form-group--disabled]="!sectie">
+        <label class="form-label">
+          An
+          @if (!sectie) {
+            <span class="form-hint">— selectează mai întâi secția</span>
+          }
+        </label>
+        <select
+          class="form-select"
+          [(ngModel)]="an"
+          [disabled]="!sectie">
+          <option value="" disabled>Selectează anul</option>
+          @for (a of aniDisponibili(); track a) {
+            <option [value]="a">{{ a }}</option>
+          }
+        </select>
+      </div>
+
+      @if (error()) {
+        <div class="alert alert-error">{{ error() }}</div>
+      }
+
+      <button
+        class="btn-submit"
+        (click)="submit()"
+        [disabled]="!isFormValid || loading()">
+        @if (loading()) {
+          <span class="btn-spinner"></span>
+          <span>Se salvează...</span>
+        } @else {
+          <span>Continuă spre StudentHub</span>
+          <span class="btn-arrow">→</span>
+        }
+      </button>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,40 @@
+<aside class="sidebar" [class.sidebar--open]="isOpen()">
+
+  <!-- Info student -->
+  <div class="sidebar-user">
+    <div class="sidebar-user-badge">
+      @if (user?.studyType) {
+        <span class="badge">
+          {{ user?.studyType === 'licenta' ? '🎓 Licență' : '📚 Master' }}
+          @if (user?.year) { · Anul {{ user?.year }} }
+        </span>
+      }
+      @if (user?.section) {
+        <span class="badge badge--section">{{ user?.section }}</span>
+      }
+    </div>
+    <p class="sidebar-faculty">Automatică și Calculatoare</p>
+  </div>
+
+  <!-- Navigatie -->
+  <nav class="sidebar-nav">
+    @for (item of navItems; track item.route) {
+      <a
+        class="nav-item"
+        [routerLink]="item.route"
+        routerLinkActive="nav-item--active"
+        [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+        (click)="closeOnMobile()">
+
+        <span class="nav-icon">{{ item.icon }}</span>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+
+  <button class="sidebar-logout" (click)="logout()">
+    <i class="fa fa-sign-out-alt"></i>
+    <span>Deconectare</span>
+  </button>
+
+</aside>

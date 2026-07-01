@@ -1,0 +1,318 @@
+<div class="cantina-page" (click)="closeMenus()">
+
+  <!-- Header -->
+  <div class="cantina-header">
+    @if (searchOpen()) {
+      <div class="search-bar" (click)="$event.stopPropagation()">
+        <input #searchInput
+               class="search-input"
+               type="text"
+               placeholder="Caută mesaje..."
+               [value]="searchQuery()"
+               (input)="onSearchInput($any($event.target).value)"
+               (keydown.escape)="toggleSearch()" />
+        @if (searchResults().length > 0) {
+          <span class="search-count">
+          {{ searchIndex() + 1 }}/{{ searchResults().length }}
+        </span>
+          <button class="search-nav-btn" (click)="searchPrev()">↑</button>
+          <button class="search-nav-btn" (click)="searchNext()">↓</button>
+        }
+        <button class="search-close-btn" (click)="toggleSearch()">✕</button>
+      </div>
+    } @else {
+      <div class="cantina-header-left">
+        <span class="cantina-icon">🍽️</span>
+        <div>
+          <h2 class="cantina-title">Coadă Cantină</h2>
+          <p class="cantina-subtitle">
+            @if (connected$ | async) {
+              <span class="status-dot status-dot--online"></span>
+              Online: {{ onlineCount$ | async }}
+            } @else {
+              <span class="status-dot status-dot--offline"></span> Conectare...
+            }
+          </p>
+        </div>
+      </div>
+      <button class="search-btn" (click)="toggleSearch(); $event.stopPropagation()">🔍</button>
+    }
+  </div>
+
+  <!-- Mesaje -->
+  <div class="messages-list" #messagesList (scroll)="onScroll($event)">
+
+    <div class="floating-date" [class.floating-date--visible]="floatingDateVisible()">
+      {{ floatingDate() }}
+    </div>
+
+    @if (loading()) {
+      <div class="chat-loading"><div class="spinner"></div></div>
+    } @else {
+
+      @let msgs = messages$ | async;
+      @if (!msgs || msgs.length === 0) {
+        <div class="chat-empty">
+          <span class="chat-empty-icon">🍽️</span>
+          <p>Niciun mesaj încă. Fii primul care scrie!</p>
+        </div>
+      } @else {
+        @for (msg of msgs; track msg.id; let i = $index) {
+
+          @if (i === 0 || !isSameDay(msgs[i-1].createdAt, msg.createdAt)) {
+            <div class="date-separator">
+              <span class="date-separator-text">{{ formatDateLabel(msg.createdAt) }}</span>
+            </div>
+          }
+
+          <div class="message-wrapper"
+               [class.message-wrapper--own]="isOwnMessage(msg)"
+               [attr.data-date]="msg.createdAt"
+                [attr.data-msg-id]="msg.id">
+
+            @if (!isOwnMessage(msg)) {
+              <div class="message-avatar">{{ getInitials(msg.userName) }}</div>
+            }
+
+            <div class="message-bubble-group">
+
+              @if (!isOwnMessage(msg)) {
+                <span class="message-name">{{ msg.userName }}</span>
+              }
+
+              <div class="message-with-actions">
+
+                <div class="message-bubble"
+                     [class.message-bubble--own]="isOwnMessage(msg)"
+                     [class.message-bubble--match]="isSearchMatch(msg.id)"
+                     [class.message-bubble--current]="isCurrentSearchResult(msg.id)">
+
+                  <button class="msg-menu-btn" (click)="toggleMenu(msg.id, $event)">
+                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+                      <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+
+                  @if (msg.replyToUserName) {
+                    <div class="reply-preview">
+                      <span class="reply-preview-name">{{ msg.replyToUserName }}</span>
+                      <span class="reply-preview-text">{{ msg.replyToText }}</span>
+                    </div>
+                  }
+
+                  @if (msg.isEdited) {
+                    <span class="message-edited">editat</span>
+                  }
+
+                  @if (msg.waitInterval && !msg.text) {
+                    <div class="message-content-row">
+                      <div class="message-interval">
+                        <span class="interval-icon">⏱️</span>
+                        <span class="interval-text">Coadă: {{ msg.waitInterval }}</span>
+                      </div>
+                      <span class="message-time">{{ formatTime(msg.createdAt) }}</span>
+                    </div>
+                  }
+
+                  @if (msg.waitInterval && msg.text) {
+                    <div class="message-interval">
+                      <span class="interval-icon">⏱️</span>
+                      <span class="interval-text">Coadă: {{ msg.waitInterval }}</span>
+                    </div>
+                    <div class="message-content-row">
+                      <p class="message-text">{{ msg.text }}</p>
+                      <span class="message-time">{{ formatTime(msg.createdAt) }}</span>
+                    </div>
+                  }
+
+                  @if (!msg.waitInterval && msg.text) {
+                    <div class="message-content-row">
+                      <p class="message-text">{{ msg.text }}</p>
+                      <span class="message-time">{{ formatTime(msg.createdAt) }}</span>
+                    </div>
+                  }
+
+                </div>
+
+                <!-- Emoji quick picker — per mesaj, ok -->
+                <button class="msg-emoji-btn" (click)="toggleEmoji(msg.id, $event)">🙂</button>
+
+                @if (activeEmojiId() === msg.id) {
+                  <div class="emoji-picker" (click)="$event.stopPropagation()">
+                    @for (emoji of quickEmojis; track emoji) {
+                      <button class="emoji-btn"
+                              [class.emoji-btn--active]="hasMyReaction(msg, emoji)"
+                              (click)="toggleReaction(msg.id, emoji)">
+                        {{ emoji }}
+                      </button>
+                    }
+                    <button class="emoji-btn emoji-btn--plus" (click)="openEmojiLibrary(msg.id, $event)">➕</button>
+                  </div>
+                }
+
+              </div>
+
+              @if (msg.reactions && msg.reactions.length > 0) {
+                <div class="reactions-row"
+                     (mouseenter)="showReactionTooltip(msg, $event)"
+                     (mouseleave)="hideReactionTooltip()">
+                  @for (reaction of msg.reactions; track reaction.emoji) {
+                    <button class="reaction-chip"
+                            [class.reaction-chip--mine]="hasMyReaction(msg, reaction.emoji)"
+                            (click)="toggleReaction(msg.id, reaction.emoji)">
+                      {{ reaction.emoji }} {{ reaction.count }}
+                    </button>
+                  }
+                </div>
+              }
+
+            </div>
+          </div>
+        }
+      }
+    }
+
+    <!-- Meniu pozitionat dinamic — IN AFARA buclei -->
+    @if (activeMenuId() && getActiveMsg()) {
+      <div class="msg-menu-fixed"
+           [style.top]="menuPosition().top"
+           [style.left]="menuPosition().left"
+           (click)="$event.stopPropagation()">
+        <div class="msg-menu-emoji-row">
+          @for (emoji of quickEmojis; track emoji) {
+            <button class="emoji-btn"
+                    [class.emoji-btn--active]="hasMyReaction(getActiveMsg()!, emoji)"
+                    (click)="toggleReaction(activeMenuId()!, emoji)">
+              {{ emoji }}
+            </button>
+          }
+          <button class="emoji-btn emoji-btn--plus" (click)="openEmojiLibrary(activeMenuId()!, $event)">➕</button>
+        </div>
+        <div class="msg-menu-divider"></div>
+        <button class="msg-menu-item" (click)="startReply(getActiveMsg()!)">💬 Răspunde</button>
+        @if (!isOwnMessage(getActiveMsg()!)) {
+          <button class="msg-menu-item msg-menu-item--report"
+                  (click)="reportMessage(activeMenuId()!)"
+                  [disabled]="reportedMessageIds().has(activeMenuId()!)">
+            🚩 Raportează
+            @if (getActiveMsg()!.reportCount > 0) {
+              <span class="report-count">{{ getActiveMsg()!.reportCount }}</span>
+            }
+          </button>
+        }
+        @if (isOwnMessage(getActiveMsg()!)) {
+          @if (getActiveMsg()!.text) {
+            <button class="msg-menu-item" (click)="startEdit(getActiveMsg()!)">✏️ Editează</button>
+          }
+          <button class="msg-menu-item msg-menu-item--danger" (click)="deleteMessage(activeMenuId()!)">🗑️ Șterge</button>
+        }
+      </div>
+    }
+    @if (showEmojiLibrary()) {
+      <div class="emoji-library-overlay" (click)="closeEmojiLibrary()">
+        <div class="emoji-library-popup"
+             [style.top]="emojiLibraryPosition().top"
+             [style.left]="emojiLibraryPosition().left"
+             (click)="$event.stopPropagation()">
+          <app-emoji-picker (emojiSelect)="onEmojiSelect($event)" />
+        </div>
+      </div>
+    }
+
+  </div>
+
+  <!-- Librarie emoji — IN AFARA buclei si messages-list -->
+
+  @if (showScrollBtn()) {
+    <button class="scroll-bottom-btn" (click)="scrollToBottomBtn()">↓</button>
+  }
+
+  @if (reactionTooltip()) {
+    <div class="reaction-tooltip-popup"
+         [style.left.px]="reactionTooltip()!.x"
+         [style.top.px]="reactionTooltip()!.y"
+         (mouseleave)="hideReactionTooltip()">
+      @for (reaction of reactionTooltip()!.reactions; track reaction.emoji) {
+        <div class="reaction-tooltip-row">
+          <span class="reaction-tooltip-emoji">{{ reaction.emoji }}</span>
+          <div class="reaction-tooltip-users">
+            @for (user of reaction.users; track user) {
+              <span class="reaction-tooltip-user">{{ user }}</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <div class="chat-input-area">
+
+    @if (editingMessageId()) {
+      <div class="context-bar context-bar--edit">
+        <div class="context-bar-content">
+          <span class="context-bar-icon">✏️</span>
+          <span class="context-bar-text">Editezi mesajul</span>
+        </div>
+        <button class="context-bar-close" (click)="cancelEdit()">✕</button>
+      </div>
+    }
+
+    @if (replyingTo()) {
+      <div class="context-bar context-bar--reply">
+        <div class="context-bar-content">
+          <span class="context-bar-icon">💬</span>
+          <div>
+            <span class="context-bar-name">{{ replyingTo()!.userName }}</span>
+            <span class="context-bar-text">{{ replyingTo()!.text || ('Coadă: ' + replyingTo()!.waitInterval) }}</span>
+          </div>
+        </div>
+        <button class="context-bar-close" (click)="cancelReply()">✕</button>
+      </div>
+    }
+
+    @if (selectedInterval()) {
+      <div class="interval-preview">
+        <div class="interval-preview-content">
+          <span>⏱️</span>
+          <span class="interval-preview-text">Coadă: {{ selectedInterval() }}</span>
+        </div>
+        <button class="interval-preview-close" (click)="clearInterval()">✕</button>
+      </div>
+    }
+
+    <div class="input-row">
+      <div class="intervals-wrapper">
+        <button class="intervals-btn" (click)="toggleIntervals()">⏱️</button>
+        @if (showIntervals()) {
+          <div class="intervals-popup">
+            <p class="intervals-popup-title">Cât e coada?</p>
+            @for (interval of waitIntervals; track interval) {
+              <button class="interval-option"
+                      [class.interval-option--active]="selectedInterval() === interval"
+                      (click)="selectInterval(interval)">{{ interval }}</button>
+            }
+          </div>
+        }
+      </div>
+
+      <textarea #textInput
+                class="message-input"
+                [(ngModel)]="text"
+                (keydown)="onKeydown($event)"
+                [placeholder]="editingMessageId() ? 'Editează mesajul...' : 'Scrie un mesaj...'"
+                rows="1">
+      </textarea>
+
+      <button class="send-btn" (click)="send()" [disabled]="!text.trim() && !selectedInterval()">
+        {{ editingMessageId() ? '✓' : '➤' }}
+      </button>
+    </div>
+  </div>
+
+  @if (toastMessage()) {
+    <div class="toast-notification">
+      {{ toastMessage() }}
+    </div>
+  }
+
+</div>

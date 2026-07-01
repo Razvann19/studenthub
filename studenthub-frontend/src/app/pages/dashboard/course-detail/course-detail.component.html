@@ -1,0 +1,519 @@
+<div class="course-detail-page" (click)="closeMenus()">
+
+  <!-- Header -->
+  <div class="course-header">
+    @if (searchOpen()) {
+      <div class="search-bar" (click)="$event.stopPropagation()">
+        <input class="search-input"
+               type="text"
+               placeholder="Caută mesaje și notițe..."
+               [value]="searchQuery()"
+               (input)="onSearchInput($any($event.target).value)"
+               (keydown.escape)="toggleSearch()" />
+        @if (searchResults().length > 0) {
+          <span class="search-count">{{ searchIndex() + 1 }}/{{ searchResults().length }}</span>
+          <button class="search-nav-btn" (click)="searchPrev()">↑</button>
+          <button class="search-nav-btn" (click)="searchNext()">↓</button>
+        }
+        <button class="search-close-btn" (click)="toggleSearch()">✕</button>
+      </div>
+    } @else {
+      <button class="back-btn" (click)="goBack()">← Cursuri</button>
+      <div class="course-header-info">
+        <h2 class="course-title">{{ courseName() || 'Curs' }}</h2>
+        @if (connected$ | async) {
+          <span class="status-dot status-dot--online"></span>
+          <span class="online-count">{{ hubService.onlineCount$ | async }} online</span>
+        } @else {
+          <span class="status-dot status-dot--offline"></span>
+        }
+      </div>
+      <button class="search-btn" (click)="toggleSearch(); $event.stopPropagation()">🔍</button>
+    }
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn" [class.tab-btn--active]="activeTab() === 'chat'" (click)="setTab('chat')">
+      💬 Chat
+    </button>
+    <button class="tab-btn" [class.tab-btn--active]="activeTab() === 'notes'" (click)="setTab('notes')">
+      📝 Notițe
+    </button>
+  </div>
+
+  <!-- Chat Tab -->
+  @if (activeTab() === 'chat') {
+    <div class="messages-list" #messagesList (scroll)="onScroll($event)">
+
+      <div class="floating-date" [class.floating-date--visible]="floatingDateVisible()">
+        {{ floatingDate() }}
+      </div>
+
+      @if (loading()) {
+        <div class="chat-loading"><div class="spinner"></div></div>
+      } @else {
+        @let msgs = messages$ | async;
+        @if (!msgs || msgs.length === 0) {
+          <div class="chat-empty">
+            <span>💬</span>
+            <p>Niciun mesaj încă. Fii primul!</p>
+          </div>
+        } @else {
+          @for (msg of msgs; track msg.id; let i = $index) {
+            @if (i === 0 || !isSameDay(msgs[i-1].createdAt, msg.createdAt)) {
+              <div class="date-separator">
+                <span class="date-separator-text">{{ formatDateLabel(msg.createdAt) }}</span>
+              </div>
+            }
+            <div class="message-wrapper"
+                 [class.message-wrapper--own]="isOwnMessage(msg)"
+                 [attr.data-msg-id]="msg.id"
+                 [attr.data-date]="msg.createdAt">
+
+              @if (!isOwnMessage(msg)) {
+                <div class="message-avatar">{{ getInitials(msg.userName) }}</div>
+              }
+
+              <div class="message-bubble-group">
+                @if (!isOwnMessage(msg)) {
+                  <span class="message-name">{{ msg.userName }}</span>
+                }
+
+                <div class="message-with-actions">
+                  <div class="message-bubble"
+                       [class.message-bubble--own]="isOwnMessage(msg)"
+                       [class.message-bubble--match]="isSearchMatch(msg.id)"
+                       [class.message-bubble--current]="isCurrentSearchResult(msg.id)">
+                    <button class="msg-menu-btn" (click)="toggleMenu(msg.id, $event)">
+                      <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+                        <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+
+                    @if (msg.replyToUserName) {
+                      <div class="reply-preview">
+                        <span class="reply-preview-name">{{ msg.replyToUserName }}</span>
+                        <span class="reply-preview-text">{{ msg.replyToText }}</span>
+                      </div>
+                    }
+
+                    @if (msg.isEdited) {
+                      <span class="message-edited">editat</span>
+                    }
+
+                    <div class="message-content-row">
+                      <p class="message-text">{{ msg.text }}</p>
+                      <span class="message-time">{{ formatTime(msg.createdAt) }}</span>
+                    </div>
+
+                    @if (msg.attachmentUrl) {
+                      <div class="note-attachment">
+                        @if (msg.attachmentType === 'jpg' || msg.attachmentType === 'jpeg' ||
+                        msg.attachmentType === 'png' || msg.attachmentType === 'webp') {
+                          <img [src]="getAttachmentUrl(msg.attachmentUrl)"
+                               alt="Attachment"
+                               class="note-attachment-img"
+                               (click)="openAttachment(msg.attachmentUrl)" />
+                        } @else {
+                          <a [href]="getDownloadUrl(msg.attachmentUrl, msg.attachmentName)"
+                             target="_blank"
+                             class="note-attachment-file">
+                            <span class="note-attachment-icon">{{ getFileIcon(msg.attachmentType) }}</span>
+                            <span class="note-attachment-name">{{ msg.attachmentName }}</span>
+                          </a>
+                        }
+                      </div>
+                    }
+                  </div>
+
+                  <button class="msg-emoji-btn" (click)="toggleEmoji(msg.id, $event)">🙂</button>
+
+                  @if (activeEmojiId() === msg.id) {
+                    <div class="emoji-picker" (click)="$event.stopPropagation()">
+                      @for (emoji of quickEmojis; track emoji) {
+                        <button class="emoji-btn"
+                                [class.emoji-btn--active]="hasMyReaction(msg, emoji)"
+                                (click)="toggleMessageReaction(msg.id, emoji)">
+                          {{ emoji }}
+                        </button>
+                      }
+                      <button class="emoji-btn emoji-btn--plus" (click)="openEmojiLibrary(msg.id, $event)">➕</button>
+                    </div>
+                  }
+                </div>
+
+                @if (msg.reactions && msg.reactions.length > 0) {
+                  <div class="reactions-row">
+                    @for (reaction of msg.reactions; track reaction.emoji) {
+                      <button class="reaction-chip"
+                              [class.reaction-chip--mine]="hasMyReaction(msg, reaction.emoji)"
+                              (click)="toggleMessageReaction(msg.id, reaction.emoji)">
+                        {{ reaction.emoji }} {{ reaction.count }}
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        }
+      }
+
+      <!-- Meniu mesaj -->
+      @if (activeMenuId() && getActiveMsg()) {
+        <div class="msg-menu-fixed"
+             [style.top]="menuPosition().top"
+             [style.left]="menuPosition().left"
+             (click)="$event.stopPropagation()">
+          <div class="msg-menu-emoji-row">
+            @for (emoji of quickEmojis; track emoji) {
+              <button class="emoji-btn"
+                      [class.emoji-btn--active]="hasMyReaction(getActiveMsg(), emoji)"
+                      (click)="toggleMessageReaction(activeMenuId()!, emoji)">
+                {{ emoji }}
+              </button>
+            }
+            <button class="emoji-btn emoji-btn--plus" (click)="openEmojiLibrary(activeMenuId()!, $event)">➕</button>
+          </div>
+          <div class="msg-menu-divider"></div>
+          <button class="msg-menu-item" (click)="startReply(getActiveMsg())">💬 Răspunde</button>
+          @if (!isOwnMessage(getActiveMsg()!)) {
+            <button class="msg-menu-item msg-menu-item--report"
+                    (click)="reportMessage(activeMenuId()!)"
+                    [disabled]="reportedMessageIds().has(activeMenuId()!)">
+              🚩 Raportează
+              @if ((getActiveMsg()!.reportCount ?? 0) > 0) {
+                <span class="report-count">{{ getActiveMsg()!.reportCount }}</span>
+              }
+            </button>
+          }
+          @if (isOwnMessage(getActiveMsg()!)) {
+            <button class="msg-menu-item" (click)="startEditMessage(getActiveMsg())">✏️ Editează</button>
+            <button class="msg-menu-item msg-menu-item--danger" (click)="deleteMessage(activeMenuId()!)">🗑️ Șterge</button>
+          }
+        </div>
+      }
+
+      <!-- Emoji Library -->
+      @if (showEmojiLibrary()) {
+        <div class="emoji-library-overlay" (click)="closeEmojiLibrary()">
+          <div class="emoji-library-popup"
+               [style.top]="emojiLibraryPosition().top"
+               [style.left]="emojiLibraryPosition().left"
+               (click)="$event.stopPropagation()">
+            <app-emoji-picker (emojiSelect)="onEmojiSelect($event)" />
+          </div>
+        </div>
+      }
+
+    </div>
+
+    <!-- Chat Input -->
+    <div class="chat-input-area">
+      @if (editingMessageId()) {
+        <div class="context-bar context-bar--edit">
+          <span>✏️ Editezi mesajul</span>
+          <button (click)="editingMessageId.set(null); chatText = ''; clearChatAttachment()">✕</button>
+        </div>
+      }
+      @if (replyingTo()) {
+        <div class="context-bar context-bar--reply">
+          <span>💬 {{ replyingTo()!.userName }}: {{ replyingTo()!.text }}</span>
+          <button (click)="replyingTo.set(null)">✕</button>
+        </div>
+      }
+      @if (selectedChatFilePreview()) {
+        <div class="attachment-preview">
+          <span class="attachment-icon">📎</span>
+          <span class="attachment-name">{{ selectedChatFilePreview() }}</span>
+          <button class="attachment-remove" (click)="clearChatAttachment()">✕</button>
+        </div>
+      }
+      <div class="input-row">
+        <label class="attachment-btn" for="chat-file-input" title="Atașează fișier">📎</label>
+        <input id="chat-file-input" type="file"
+               accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+               (change)="onChatFileSelected($event)" style="display:none" />
+        <textarea #textInput class="message-input"
+                  [(ngModel)]="chatText"
+                  (keydown)="onChatKeydown($event)"
+                  [placeholder]="editingMessageId() ? 'Editează mesajul...' : 'Scrie un mesaj...'"
+                  rows="1"></textarea>
+        <button class="send-btn" (click)="sendMessage()"
+                [disabled]="!chatText.trim() && !selectedChatFile() || uploadingChatFile()">
+          @if (uploadingChatFile()) {
+            <span class="btn-spinner"></span>
+          } @else {
+            {{ editingMessageId() ? '✓' : '➤' }}
+          }
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Notes Tab -->
+  @if (activeTab() === 'notes') {
+    <div class="notes-list" #notesList (scroll)="onNotesScroll($event)">
+
+      <div class="floating-date" [class.floating-date--visible]="floatingNoteDateVisible()">
+        {{ floatingNoteDate() }}
+      </div>
+
+      @if (loading()) {
+        <div class="chat-loading"><div class="spinner"></div></div>
+      } @else {
+        @let noteItems = notes$ | async;
+        @if (!noteItems || noteItems.length === 0) {
+          <div class="chat-empty">
+            <span>📝</span>
+            <p>Nicio notiță încă. Adaugă prima!</p>
+          </div>
+        } @else {
+          @for (note of noteItems; track note.id; let i = $index) {
+            @if (i === 0 || !isSameDay(noteItems[i-1].createdAt, note.createdAt)) {
+              <div class="date-separator">
+                <span class="date-separator-text">{{ formatDateLabel(note.createdAt) }}</span>
+              </div>
+            }
+
+            @if (note.attachmentUrl) {
+              <div class="note-card" [class.note-card--own]="isOwnNote(note)"
+                   [attr.data-date]="note.createdAt">
+                <div class="note-header">
+                  <div class="note-avatar">
+                    @if (isOwnNote(note) && profilePhotoUrl) {
+                      <img [src]="profilePhotoUrl" alt="Profil" class="note-avatar-img" />
+                    } @else {
+                      {{ getInitials(note.userName) }}
+                    }
+                  </div>
+                  <div class="note-meta">
+                    <span class="note-author">{{ note.userName }}</span>
+                    <span class="note-time">{{ formatTime(note.createdAt) }}</span>
+                    @if (note.isEdited) {
+                      <span class="note-edited">editat</span>
+                    }
+                  </div>
+                  @if (isOwnNote(note)) {
+                    <div class="note-actions">
+                      <button class="note-action-btn" (click)="startEditNote(note)">✏️</button>
+                      <button class="note-action-btn note-action-btn--danger" (click)="deleteNote(note.id)">🗑️</button>
+                    </div>
+                  }
+                </div>
+
+                @if (note.text) {
+                  <p class="note-text">{{ note.text }}</p>
+                }
+
+                <div class="note-attachment">
+                  @if (note.attachmentType === 'jpg' || note.attachmentType === 'jpeg' ||
+                  note.attachmentType === 'png' || note.attachmentType === 'webp') {
+                    <img [src]="getAttachmentUrl(note.attachmentUrl)"
+                         alt="Attachment"
+                         class="note-attachment-img"
+                         (click)="openAttachment(note.attachmentUrl)" />
+                  } @else {
+                    <a [href]="getDownloadUrl(note.attachmentUrl, note.attachmentName)"
+                       target="_blank"
+                       class="note-attachment-file">
+                      <span class="note-attachment-icon">{{ getFileIcon(note.attachmentType) }}</span>
+                      <span class="note-attachment-name">{{ note.attachmentName }}</span>
+                    </a>
+                  }
+                </div>
+
+                <span class="note-id">🔖 {{ note.noteId }}</span>
+
+                <div class="note-footer">
+                  @for (emoji of quickEmojis; track emoji) {
+                    <button class="emoji-btn emoji-btn--sm"
+                            [class.emoji-btn--active]="hasMyReaction(note, emoji)"
+                            (click)="toggleNoteReaction(note.id, emoji)">
+                      {{ emoji }}
+                    </button>
+                  }
+                  <button class="emoji-btn emoji-btn--plus" (click)="openEmojiLibraryNote(note.id, $event)">➕</button>
+                  @if (note.reactions && note.reactions.length > 0) {
+                    <div class="reactions-row">
+                      @for (reaction of note.reactions; track reaction.emoji) {
+                        <button class="reaction-chip"
+                                [class.reaction-chip--mine]="hasMyReaction(note, reaction.emoji)"
+                                (click)="toggleNoteReaction(note.id, reaction.emoji)">
+                          {{ reaction.emoji }} {{ reaction.count }}
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+
+            } @else {
+              <div class="message-wrapper"
+                   [class.message-wrapper--own]="isOwnNote(note)"
+                   [attr.data-note-id]="note.id"
+                   [attr.data-date]="note.createdAt">
+
+                @if (!isOwnNote(note)) {
+                  <div class="message-avatar">{{ getInitials(note.userName) }}</div>
+                }
+
+                <div class="message-bubble-group">
+                  @if (!isOwnNote(note)) {
+                    <span class="message-name">{{ note.userName }}</span>
+                  }
+
+                  <div class="message-with-actions">
+                    <div class="note-bubble"
+                         [class.note-bubble--own]="isOwnNote(note)"
+                         [class.note-card--match]="isSearchMatch(note.id)"
+                         [class.note-card--current]="isCurrentSearchResult(note.id)"
+                         [attr.data-date]="note.createdAt">
+                      <button class="msg-menu-btn" (click)="toggleNoteMenu(note.id, $event)">
+                        <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+                          <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </button>
+
+                      @if (note.isEdited) {
+                        <span class="message-edited">editat</span>
+                      }
+                      <div class="message-content-row">
+                        <p class="message-text">{{ note.text }}</p>
+                        <span class="message-time">{{ formatTime(note.createdAt) }}</span>
+                      </div>
+                    </div>
+
+                    <button class="msg-emoji-btn" (click)="toggleNoteEmoji(note.id, $event)">🙂</button>
+
+                    @if (activeNoteEmojiId() === note.id) {
+                      <div class="emoji-picker" (click)="$event.stopPropagation()">
+                        @for (emoji of quickEmojis; track emoji) {
+                          <button class="emoji-btn"
+                                  [class.emoji-btn--active]="hasMyReaction(note, emoji)"
+                                  (click)="toggleNoteReaction(note.id, emoji)">
+                            {{ emoji }}
+                          </button>
+                        }
+                        <button class="emoji-btn emoji-btn--plus" (click)="openEmojiLibraryNote(note.id, $event)">➕</button>
+                      </div>
+                    }
+                  </div>
+
+                  @if (note.reactions && note.reactions.length > 0) {
+                    <div class="reactions-row">
+                      @for (reaction of note.reactions; track reaction.emoji) {
+                        <button class="reaction-chip"
+                                [class.reaction-chip--mine]="hasMyReaction(note, reaction.emoji)"
+                                (click)="toggleNoteReaction(note.id, reaction.emoji)">
+                          {{ reaction.emoji }} {{ reaction.count }}
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Meniu notiță simplă -->
+              @if (activeNoteMenuId() === note.id) {
+                <div class="msg-menu-fixed"
+                     [style.top]="noteMenuPosition().top"
+                     [style.left]="noteMenuPosition().left"
+                     (click)="$event.stopPropagation()">
+                  <div class="msg-menu-emoji-row">
+                    @for (emoji of quickEmojis; track emoji) {
+                      <button class="emoji-btn"
+                              [class.emoji-btn--active]="hasMyReaction(note, emoji)"
+                              (click)="toggleNoteReaction(note.id, emoji)">
+                        {{ emoji }}
+                      </button>
+                    }
+                    <button class="emoji-btn emoji-btn--plus" (click)="openEmojiLibraryNote(note.id, $event)">➕</button>
+                  </div>
+                  <div class="msg-menu-divider"></div>
+                  <button class="msg-menu-item" (click)="startReplyNote(note); activeNoteMenuId.set(null)">💬 Răspunde</button>
+                  @if (!isOwnNote(note)) {
+                    <button class="msg-menu-item msg-menu-item--report"
+                            (click)="reportMessage(note.id); activeNoteMenuId.set(null)"
+                            [disabled]="reportedMessageIds().has(note.id)">
+                      🚩 Raportează
+                      @if ((note.reportCount ?? 0) > 0) {
+                        <span class="report-count">{{ note.reportCount }}</span>
+                      }
+                    </button>
+                  }
+                  @if (isOwnNote(note)) {
+                    <button class="msg-menu-item" (click)="startEditNote(note); activeNoteMenuId.set(null)">✏️ Editează</button>
+                    <button class="msg-menu-item msg-menu-item--danger" (click)="deleteNote(note.id); activeNoteMenuId.set(null)">🗑️ Șterge</button>
+                  }
+                </div>
+              }
+            }
+          }
+        }
+      }
+
+      <!-- Emoji Library pentru notițe -->
+      @if (showEmojiLibraryNote()) {
+        <div class="emoji-library-overlay" (click)="closeEmojiLibraryNote()">
+          <div class="emoji-library-popup"
+               [style.top]="emojiLibraryNotePosition().top"
+               [style.left]="emojiLibraryNotePosition().left"
+               (click)="$event.stopPropagation()">
+            <app-emoji-picker (emojiSelect)="onEmojiSelectNote($event)" />
+          </div>
+        </div>
+      }
+
+    </div>
+
+    @if (replyingToNote()) {
+      <div class="context-bar context-bar--reply">
+        <span>💬 {{ replyingToNote()!.userName }}: {{ replyingToNote()!.text }}</span>
+        <button (click)="replyingToNote.set(null)">✕</button>
+      </div>
+    }
+
+    <!-- Note Input -->
+    <div class="chat-input-area">
+      @if (editingNoteId()) {
+        <div class="context-bar context-bar--edit">
+          <span>✏️ Editezi notița</span>
+          <button (click)="editingNoteId.set(null); noteText = ''; clearNoteAttachment()">✕</button>
+        </div>
+      }
+      @if (selectedNoteFilePreview()) {
+        <div class="attachment-preview">
+          <span class="attachment-icon">📎</span>
+          <span class="attachment-name">{{ selectedNoteFilePreview() }}</span>
+          <button class="attachment-remove" (click)="clearNoteAttachment()">✕</button>
+        </div>
+      }
+      <div class="input-row">
+        <label class="attachment-btn" for="note-file-input" title="Atașează fișier">📎</label>
+        <input id="note-file-input" type="file"
+               accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+               (change)="onNoteFileSelected($event)" style="display:none" />
+        <textarea class="message-input"
+                  [(ngModel)]="noteText"
+                  (keydown)="onNoteKeydown($event)"
+                  [placeholder]="editingNoteId() ? 'Editează notița...' : 'Adaugă o notiță...'"
+                  rows="1"></textarea>
+        <button class="send-btn" (click)="addNote()"
+                [disabled]="!noteText.trim() && !selectedNoteFile() || uploadingNoteFile()">
+          @if (uploadingNoteFile()) {
+            <span class="btn-spinner"></span>
+          } @else {
+            {{ editingNoteId() ? '✓' : '➤' }}
+          }
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (toastMessage()) {
+    <div class="toast-notification">{{ toastMessage() }}</div>
+  }
+
+</div>
