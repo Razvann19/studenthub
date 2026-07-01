@@ -99,7 +99,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "http://localhost")
+        policy.WithOrigins("http://localhost:4200", "http://localhost", "https://studenthub-upt.duckdns.org")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
