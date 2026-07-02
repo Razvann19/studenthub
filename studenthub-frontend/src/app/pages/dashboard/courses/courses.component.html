@@ -25,9 +25,19 @@
       <p>Nu există cursuri adăugate pentru secția ta.</p>
     </div>
   } @else {
+
+    <div class="semester-filter">
+      <button class="sem-btn" [class.sem-btn--active]="selectedSemester() === null"
+              (click)="setSemester(null)">Toate</button>
+      <button class="sem-btn sem-btn--s1" [class.sem-btn--active]="selectedSemester() === 1"
+              (click)="setSemester(1)">Semestrul 1</button>
+      <button class="sem-btn sem-btn--s2" [class.sem-btn--active]="selectedSemester() === 2"
+              (click)="setSemester(2)">Semestrul 2</button>
+    </div>
+
     <div class="courses-grid-wrapper">
       <div class="courses-grid">
-        @for (course of courses(); track course.id; let i = $index) {
+        @for (course of filteredCourses; track course.id; let i = $index) {
           <div class="course-card" (click)="goToCourse(course)">
             <div class="course-abbr">
               {{ getShortName(course) }}
@@ -40,6 +50,7 @@
         }
       </div>
     </div>
+
   }
 
 </div>

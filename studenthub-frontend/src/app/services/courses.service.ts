@@ -7,6 +7,7 @@ export interface Course {
   id: number;
   name: string;
   shortName: string | null;
+  semester: number | null;
 }
 
 @Injectable({ providedIn: 'root' })

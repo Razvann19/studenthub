@@ -59,7 +59,7 @@ public class IndexModel : PageModel
         }
     }
 
-    public async Task<IActionResult> OnPostAddAsync(string studyType, string sectionName, int year, string name, string? shortName)
+    public async Task<IActionResult> OnPostAddAsync(string studyType, string sectionName, int year, string name, string? shortName, int? semester)
     {
         if (string.IsNullOrWhiteSpace(name))
             return RedirectToPage(new { SelectedStudyType = studyType, SelectedSection = sectionName, SelectedYear = year });
@@ -76,13 +76,13 @@ public class IndexModel : PageModel
             Name = name.Trim(),
             ShortName = string.IsNullOrWhiteSpace(shortName) ? null : shortName.Trim().ToUpper(),
             Order = maxOrder + 1,
-            IsActive = true
+            IsActive = true,
+            Semester = semester
         });
 
         await _db.SaveChangesAsync();
         return RedirectToPage(new { SelectedStudyType = studyType, SelectedSection = sectionName, SelectedYear = year });
     }
-
 
     public async Task<IActionResult> OnPostDeleteAsync(int id, string studyType, string sectionName, int year)
     {
@@ -95,13 +95,14 @@ public class IndexModel : PageModel
         return RedirectToPage(new { SelectedStudyType = studyType, SelectedSection = sectionName, SelectedYear = year });
     }
 
-    public async Task<IActionResult> OnPostEditAsync(int id, string name, string? shortName, string studyType, string sectionName, int year)
+    public async Task<IActionResult> OnPostEditAsync(int id, string name, string? shortName, int? semester, string studyType, string sectionName, int year)
     {
         var course = await _db.Courses.FindAsync(id);
         if (course != null)
         {
             course.Name = name.Trim();
             course.ShortName = string.IsNullOrWhiteSpace(shortName) ? null : shortName.Trim().ToUpper();
+            course.Semester = semester;
             await _db.SaveChangesAsync();
         }
         return RedirectToPage(new { SelectedStudyType = studyType, SelectedSection = sectionName, SelectedYear = year });
@@ -121,5 +122,16 @@ public class IndexModel : PageModel
 
         await _db.SaveChangesAsync();
         return new OkResult();
+    }
+
+    public async Task<IActionResult> OnPostSetSemesterAsync(int id, int? semester, string studyType, string sectionName, int year)
+    {
+        var course = await _db.Courses.FindAsync(id);
+        if (course != null)
+        {
+            course.Semester = semester;
+            await _db.SaveChangesAsync();
+        }
+        return RedirectToPage(new { SelectedStudyType = studyType, SelectedSection = sectionName, SelectedYear = year });
     }
 }

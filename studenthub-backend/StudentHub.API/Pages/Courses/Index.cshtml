@@ -8,8 +8,8 @@
 <div class="admin-page">
   <div class="admin-header">
     <h1 class="admin-title">📚 Cursuri</h1>
-    <a href="/Admin/Index" class="btn-back">← Înapoi</a>
   </div>
+  <p><a href="/Admin/Index">← Înapoi la Dashboard</a></p>
 
   <div class="sections-grid">
     <div>
@@ -74,7 +74,40 @@
               <span class="course-short-badge">@course.ShortName</span>
             }
             @course.Name
+            @if (course.Semester == 1)
+            {
+              <span class="semester-badge semester-badge--s1">S1</span>
+            }
+            else if (course.Semester == 2)
+            {
+              <span class="semester-badge semester-badge--s2">S2</span>
+            }
           </span>
+
+          <div class="semester-btns">
+            <form method="post" asp-page-handler="SetSemester" style="display:inline;">
+              <input type="hidden" name="id" value="@course.Id" />
+              <input type="hidden" name="semester" value="1" />
+              <input type="hidden" name="studyType" value="@Model.SelectedStudyType" />
+              <input type="hidden" name="sectionName" value="@Model.SelectedSection" />
+              <input type="hidden" name="year" value="@Model.SelectedYear" />
+              <button type="submit"
+                      class="btn-semester @(course.Semester == 1 ? "btn-semester--active-s1" : "")">
+                S1
+              </button>
+            </form>
+            <form method="post" asp-page-handler="SetSemester" style="display:inline;">
+              <input type="hidden" name="id" value="@course.Id" />
+              <input type="hidden" name="semester" value="2" />
+              <input type="hidden" name="studyType" value="@Model.SelectedStudyType" />
+              <input type="hidden" name="sectionName" value="@Model.SelectedSection" />
+              <input type="hidden" name="year" value="@Model.SelectedYear" />
+              <button type="submit"
+                      class="btn-semester @(course.Semester == 2 ? "btn-semester--active-s2" : "")">
+                S2
+              </button>
+            </form>
+          </div>
 
           <form class="item-edit-@course.Id" method="post" asp-page-handler="Edit"
                 style="display:none; gap:0.5rem; align-items:center; flex: 1;">
@@ -82,6 +115,7 @@
             <input type="hidden" name="studyType" value="@Model.SelectedStudyType" />
             <input type="hidden" name="sectionName" value="@Model.SelectedSection" />
             <input type="hidden" name="year" value="@Model.SelectedYear" />
+            <input type="hidden" name="semester" value="@course.Semester" />
             <input type="text" name="shortName" value="@course.ShortName"
                    class="edit-input edit-input--short" placeholder="ex: BD" maxlength="5" />
             <input type="text" name="name" value="@course.Name"
@@ -115,6 +149,13 @@
              placeholder="BD" maxlength="5" />
       <input type="text" name="name" class="add-input"
              placeholder="ex: Baze de Date" required />
+      <div class="semester-btns-add">
+        <button type="button" class="btn-semester" id="btn-s1-add"
+                onclick="selectSemesterAdd(1)">S1</button>
+        <button type="button" class="btn-semester" id="btn-s2-add"
+                onclick="selectSemesterAdd(2)">S2</button>
+        <input type="hidden" name="semester" id="add-semester-input" value="" />
+      </div>
       <button type="submit" class="btn-add">+ Adaugă</button>
     </form>
   }
@@ -130,6 +171,15 @@ function startEdit(id) {
 function cancelEdit(id) {
   document.querySelector('.item-view-' + id).style.display = '';
   document.querySelector('.item-edit-' + id).style.display = 'none';
+}
+
+let selectedSemesterAdd = null;
+
+function selectSemesterAdd(s) {
+  selectedSemesterAdd = selectedSemesterAdd === s ? null : s;
+  document.getElementById('add-semester-input').value = selectedSemesterAdd ?? '';
+  document.getElementById('btn-s1-add').className = 'btn-semester' + (selectedSemesterAdd === 1 ? ' btn-semester--active-s1' : '');
+  document.getElementById('btn-s2-add').className = 'btn-semester' + (selectedSemesterAdd === 2 ? ' btn-semester--active-s2' : '');
 }
 
 const coursesList = document.getElementById('courses-list');
@@ -182,11 +232,23 @@ if (coursesList) {
 .item-name { flex: 1; font-size: 0.875rem; font-weight: 500; color: #0f1f3d; display: flex; align-items: center; gap: 0.5rem; }
 .course-short-badge { background: linear-gradient(135deg, #0f1f3d, #1a3a6e); color: white; font-size: 0.7rem; font-weight: 800; padding: 0.2rem 0.5rem; border-radius: 0.375rem; letter-spacing: 0.05em; flex-shrink: 0; }
 
+.semester-badge { font-size: 0.65rem; font-weight: 800; padding: 0.15rem 0.4rem; border-radius: 0.25rem; flex-shrink: 0; }
+.semester-badge--s1 { background: rgba(59,130,246,0.12); color: #1d4ed8; border: 1px solid #bfdbfe; }
+.semester-badge--s2 { background: rgba(16,185,129,0.12); color: #047857; border: 1px solid #a7f3d0; }
+
+.semester-btns { display: flex; gap: 0.25rem; flex-shrink: 0; }
+.semester-btns-add { display: flex; gap: 0.25rem; flex-shrink: 0; }
+
+.btn-semester { background: #f3f4f6; border: 1.5px solid #e5e7eb; border-radius: 0.375rem; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 0.75rem; font-weight: 700; font-family: inherit; transition: all 0.15s; color: #6b7280; }
+.btn-semester:hover { border-color: #9ca3af; }
+.btn-semester--active-s1 { background: rgba(59,130,246,0.12); border-color: #3b82f6; color: #1d4ed8; }
+.btn-semester--active-s2 { background: rgba(16,185,129,0.12); border-color: #10b981; color: #047857; }
+
 .edit-input { padding: 0.35rem 0.5rem; border: 1.5px solid #0f1f3d; border-radius: 0.375rem; font-size: 0.875rem; font-family: inherit; }
 .edit-input:not(.edit-input--short) { flex: 1; }
 .edit-input--short { width: 60px; flex: none; text-align: center; font-weight: 700; }
 
-.item-actions { display: flex; gap: 0.375rem; flex-shrink: 0; margin-left: auto; }
+.item-actions { display: flex; gap: 0.375rem; flex-shrink: 0; }
 .btn-action { background: none; border: 1px solid #e5e7eb; border-radius: 0.375rem; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 0.8rem; transition: all 0.15s; }
 .btn-action:hover { background: #f3f4f6; }
 .btn-action--danger { border-color: #fca5a5; color: #dc2626; }

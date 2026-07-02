@@ -38,7 +38,7 @@ public class CoursesController : ApiBaseController
                         c.Year == user.Year &&
                         c.IsActive)
             .OrderBy(c => c.Order)
-            .Select(c => new { c.Id, c.Name, c.ShortName, c.Section, c.Year, c.StudyType })
+            .Select(c => new { c.Id, c.Name, c.ShortName, c.Section, c.Year, c.StudyType, c.Semester })
             .ToListAsync();
 
         return Success(courses);

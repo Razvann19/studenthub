@@ -18,9 +18,9 @@ export class CoursesComponent implements OnInit, OnDestroy {
   unreadCounts = signal<Record<string, number>>({});
   private pollInterval: any = null;
 
-
   courses = signal<Course[]>([]);
   loading = signal(true);
+  selectedSemester = signal<number | null>(null);
 
   get user() { return this.authService.currentUser; }
 
@@ -38,6 +38,15 @@ export class CoursesComponent implements OnInit, OnDestroy {
     const courses = await this.coursesService.getMyCourses();
     this.courses.set(courses);
     this.loading.set(false);
+
+    // Restaurare semestru salvat per secție+an
+    const user = this.user;
+    if (user?.section && user?.year) {
+      const key = `semester_filter_${user.section}_${user.year}`;
+      const saved = localStorage.getItem(key);
+      this.selectedSemester.set(saved ? parseInt(saved) : null);
+    }
+
     await this.loadUnreadCounts();
     this.pollInterval = setInterval(() => {
       this.loadUnreadCounts();
@@ -60,12 +69,35 @@ export class CoursesComponent implements OnInit, OnDestroy {
   goToEditProfile(): void {
     this.router.navigate(['/dashboard/profile/edit']);
   }
+
   goToCourse(course: Course): void {
     this.router.navigate(['/dashboard/courses', course.id], {
       state: { name: course.name }
     });
   }
+
   getShortName(course: Course): string {
     return course.shortName || course.name.slice(0, 3).toUpperCase();
+  }
+
+  get filteredCourses(): Course[] {
+    const sem = this.selectedSemester();
+    if (sem === null) return this.courses();
+    return this.courses().filter(c => c.semester === sem || c.semester === null);
+  }
+
+  setSemester(sem: number | null): void {
+    const newVal = this.selectedSemester() === sem ? null : sem;
+    this.selectedSemester.set(newVal);
+
+    const user = this.user;
+    if (user?.section && user?.year) {
+      const key = `semester_filter_${user.section}_${user.year}`;
+      if (newVal === null) {
+        localStorage.removeItem(key);
+      } else {
+        localStorage.setItem(key, String(newVal));
+      }
+    }
   }
 }
