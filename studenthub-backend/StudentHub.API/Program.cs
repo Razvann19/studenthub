@@ -65,6 +65,12 @@ builder.Services.ConfigureApplicationCookie(options =>
         context.Response.Redirect(context.RedirectUri);
         return Task.CompletedTask;
     };
+
+    options.Events.OnRedirectToReturnUrl = context =>
+    {
+        context.Response.Redirect("/Admin/Index");
+        return Task.CompletedTask;
+    };
 });
 
 builder.Services.AddScoped<IAuthService, AuthService>();
