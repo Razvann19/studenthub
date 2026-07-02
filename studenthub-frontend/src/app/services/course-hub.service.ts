@@ -39,6 +39,8 @@ export interface CourseNote {
   attachmentType: string | null;
   reactions: { emoji: string; count: number; users: string[] }[];
   reportCount?: number;
+  extractedText?: string | null;
+
 
 }
 
@@ -173,9 +175,9 @@ export class CourseHubService {
   async addNote(
     courseId: number, text: string | null, userId: number, userName: string,
     attachmentUrl: string | null = null, attachmentName: string | null = null,
-    attachmentType: string | null = null
+    attachmentType: string | null = null, extractedText: string | null = null
   ): Promise<void> {
-    await this.connection?.invoke('AddNote', courseId, text, userId, userName, attachmentUrl, attachmentName, attachmentType);
+    await this.connection?.invoke('AddNote', courseId, text, userId, userName, attachmentUrl, attachmentName, attachmentType, extractedText);
   }
 
   async editNote(noteId: number, newText: string, userId: number): Promise<void> {

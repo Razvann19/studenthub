@@ -19,6 +19,7 @@ builder.Services.AddSingleton<NoteIdService>();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<OnlineTracker>();
 builder.Services.AddSingleton<BadWordService>();
+builder.Services.AddSingleton<TextExtractionService>();
 builder.Services.AddScoped<HubUserService>();
 
 // Database

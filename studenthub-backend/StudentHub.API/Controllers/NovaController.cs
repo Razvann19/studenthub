@@ -155,8 +155,10 @@ public async Task<IActionResult> Chat(int id, [FromBody] ChatDto dto)
             if (note != null)
             {
                 noteContext = $"\n\nContextul notiței {noteId}:\nText: {note.Text ?? "(fără text)"}\n";
-                if (!string.IsNullOrEmpty(note.AttachmentName))
-                    noteContext += $"Fișier atașat: {note.AttachmentName}\n";
+                if (!string.IsNullOrEmpty(note.ExtractedText))
+                    noteContext += $"Conținut fișier atașat:\n{note.ExtractedText}\n";
+                else if (!string.IsNullOrEmpty(note.AttachmentName))
+                    noteContext += $"Fișier atașat: {note.AttachmentName} (conținut indisponibil)\n";
             }
         }
     }

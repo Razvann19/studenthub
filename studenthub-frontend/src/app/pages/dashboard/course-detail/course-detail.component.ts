@@ -152,17 +152,17 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
     }
   }
 
-  private async uploadFile(file: File): Promise<{ url: string; name: string; type: string } | null> {
+  private async uploadFile(file: File): Promise<{ url: string; name: string; type: string; extractedText?: string | null } | null> {
     const formData = new FormData();
     formData.append('file', file);
     try {
       const response = await firstValueFrom(
-        this.http.post<{ success: boolean; data: { url: string; originalName: string; type: string } }>(
+        this.http.post<{ success: boolean; data: { url: string; originalName: string; type: string; extractedText?: string | null } }>(
           `${environment.apiUrl}/NoteAttachment/upload`, formData
         )
       );
       if (response.success) {
-        return { url: response.data.url, name: response.data.originalName, type: response.data.type };
+        return { url: response.data.url, name: response.data.originalName, type: response.data.type, extractedText: response.data.extractedText };
       }
     } catch {
       alert('Eroare la încărcarea fișierului.');
@@ -361,6 +361,7 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
     let attachmentUrl: string | null = null;
     let attachmentName: string | null = null;
     let attachmentType: string | null = null;
+    let extractedText: string | null = null;
 
     if (file && !editId) {
       this.uploadingNoteFile.set(true);
@@ -370,6 +371,7 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
       attachmentUrl = result.url;
       attachmentName = result.name;
       attachmentType = result.type;
+      extractedText = result.extractedText ?? null;
     }
 
     if (editId) {
@@ -378,7 +380,7 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
     } else {
       await this.hubService.addNote(
         this.courseId(), text || null, user.id, user.fullName,
-        attachmentUrl, attachmentName, attachmentType
+        attachmentUrl, attachmentName, attachmentType, extractedText
       );
     }
 
@@ -386,7 +388,6 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
     this.selectedNoteFile.set(null);
     this.selectedNoteFilePreview.set(null);
     this.replyingToNote.set(null);
-
   }
 
   onNoteKeydown(event: KeyboardEvent): void {

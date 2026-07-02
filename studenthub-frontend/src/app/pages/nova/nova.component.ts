@@ -6,6 +6,8 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { NovaService, AiConversation, AiMessage } from '../../services/nova.service';
+import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
+import {marked} from 'marked';
 
 @Component({
   selector: 'app-nova',
@@ -231,5 +233,12 @@ export class NovaComponent implements OnInit, AfterViewChecked {
     } else {
       this.goBack();
     }
+  }
+
+  private sanitizer = inject(DomSanitizer);
+
+  parseMarkdown(text: string): SafeHtml {
+    const html = marked.parse(text) as string;
+    return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 }

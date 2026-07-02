@@ -132,7 +132,11 @@
               }
 
               <div class="nova-message-bubble">
-                {{ msg.content }}
+                @if (msg.role === 'assistant') {
+                  <span [innerHTML]="parseMarkdown(msg.content)"></span>
+                } @else {
+                  {{ msg.content }}
+                }
                 <span class="nova-message-time">{{ formatTime(msg.createdAt) }}</span>
               </div>
             </div>

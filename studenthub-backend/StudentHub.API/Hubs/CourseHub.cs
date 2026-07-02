@@ -208,7 +208,7 @@ public class CourseHub : Hub
     // ── NOTES ─────────────────────────────────────
 
     public async Task AddNote(int courseId, string? text, int userId, string userName,
-        string? attachmentUrl, string? attachmentName, string? attachmentType)
+        string? attachmentUrl, string? attachmentName, string? attachmentType, string? extractedText = null)
     {
         var realUserId = await _hubUserService.GetUserIdAsync(Context.User!);
         if (realUserId == null || realUserId != userId) return;
@@ -224,6 +224,7 @@ public class CourseHub : Hub
             AttachmentUrl = attachmentUrl,
             AttachmentName = attachmentName,
             AttachmentType = attachmentType,
+            ExtractedText = extractedText,
             NoteId = _noteIdService.Generate(),
             CreatedAt = DateTime.UtcNow
         };
@@ -338,6 +339,7 @@ public class CourseHub : Hub
             CreatedAt = n.CreatedAt.ToString("O"),
             n.UserId, n.IsEdited,
             n.AttachmentUrl, n.AttachmentName, n.AttachmentType,
+            n.ExtractedText,
             Reactions = noteReactions,
         };
     }

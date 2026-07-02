@@ -13,6 +13,8 @@ public class Note
     public string? AttachmentUrl { get; set; }
     public string? AttachmentName { get; set; }
     public string? AttachmentType { get; set; }
+    public string? ExtractedText { get; set; }
+
     public Course Course { get; set; } = null!;
     public User User { get; set; } = null!;
     
