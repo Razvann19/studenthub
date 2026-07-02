@@ -157,29 +157,27 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
     formData.append('file', file);
     try {
       const response = await firstValueFrom(
-        this.http.post<{ success: boolean; data: { url: string; originalName: string; type: string; extractedText?: string | null } }>(
+        this.http.post<{ success: boolean; data: { url: string; originalName: string; type: string; extractedText?: string | null }; message?: string }>(
           `${environment.apiUrl}/NoteAttachment/upload`, formData
         )
       );
       if (response.success) {
         return { url: response.data.url, name: response.data.originalName, type: response.data.type, extractedText: response.data.extractedText };
+      } else {
+        this.showToast(`⚠️ ${response.message ?? 'Eroare la încărcare.'}`);
       }
-    } catch {
-      alert('Eroare la încărcarea fișierului.');
+    } catch (err: any) {
+      const msg = err?.error?.message;
+      if (msg) {
+        this.showToast(`⚠️ ${msg}`);
+      } else {
+        this.showToast('⚠️ Eroare la încărcarea fișierului.');
+      }
     }
     return null;
   }
 
   // ── Chat Attachment ───────────────────────────
-  async onChatFileSelected(event: Event): Promise<void> {
-    const input = event.target as HTMLInputElement;
-    if (!input.files?.length) return;
-    const file = input.files[0];
-    if (file.size > 20 * 1024 * 1024) { alert('Fișierul depășește 20MB.'); return; }
-    this.selectedChatFile.set(file);
-    this.selectedChatFilePreview.set(file.name);
-    input.value = '';
-  }
 
   clearChatAttachment(): void {
     this.selectedChatFile.set(null);
@@ -191,9 +189,49 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
     const file = input.files[0];
-    if (file.size > 20 * 1024 * 1024) { alert('Fișierul depășește 20MB.'); return; }
+
+    const allowed = ['.jpg', '.jpeg', '.png', '.webp', '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt'];
+    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+
+    if (!allowed.includes(ext)) {
+      this.showToast(`⚠️ Formatul „${ext}" nu este permis. Formate acceptate: PDF, Word, Excel, PowerPoint, imagini, TXT.`);
+      input.value = '';
+      return;
+    }
+
+    if (file.size > 20 * 1024 * 1024) {
+      this.showToast('⚠️ Fișierul depășește limita de 20 MB.');
+      input.value = '';
+      return;
+    }
+
     this.selectedNoteFile.set(file);
     this.selectedNoteFilePreview.set(file.name);
+    input.value = '';
+  }
+
+  async onChatFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const file = input.files[0];
+
+    const allowed = ['.jpg', '.jpeg', '.png', '.webp', '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt'];
+    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+
+    if (!allowed.includes(ext)) {
+      this.showToast(`⚠️ Formatul „${ext}" nu este permis. Formate acceptate: PDF, Word, Excel, PowerPoint, imagini, TXT.`);
+      input.value = '';
+      return;
+    }
+
+    if (file.size > 20 * 1024 * 1024) {
+      this.showToast('⚠️ Fișierul depășește limita de 20 MB.');
+      input.value = '';
+      return;
+    }
+
+    this.selectedChatFile.set(file);
+    this.selectedChatFilePreview.set(file.name);
     input.value = '';
   }
 
