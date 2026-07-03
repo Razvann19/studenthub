@@ -70,8 +70,7 @@ public class AppDbContext : IdentityDbContext<IdentityUser>
         {
             entity.ToTable("MessageReactions");
             entity.HasKey(e => e.Id);
-        
-            // Configurare explicită a foreign key fără navigation property
+            
             entity.Property(e => e.MessageId)
                 .HasColumnName("MessageId");
         

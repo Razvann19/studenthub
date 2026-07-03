@@ -24,8 +24,6 @@ public class NovaController : ApiBaseController
         _http = httpClientFactory.CreateClient();
     }
 
-    // ── Conversations ──────────────────────────────
-
     [HttpGet("conversations")]
     public async Task<IActionResult> GetConversations()
     {
@@ -124,8 +122,6 @@ public class NovaController : ApiBaseController
         return Success(messages);
     }
 
-    // ── Chat ──────────────────────────────────────
-
    [HttpPost("conversations/{id}/chat")]
 public async Task<IActionResult> Chat(int id, [FromBody] ChatDto dto)
 {
@@ -212,8 +208,7 @@ public async Task<IActionResult> Chat(int id, [FromBody] ChatDto dto)
         CreatedAt = DateTime.UtcNow
     };
     _db.AiMessages.Add(assistantMessage);
-
-    // Generează titlu dacă e primul mesaj
+    
     if (isFirstMessage && !string.IsNullOrEmpty(dto.Message))
     {
         try
@@ -262,8 +257,6 @@ public async Task<IActionResult> Chat(int id, [FromBody] ChatDto dto)
     return Success(new { message = assistantText, conversationId = id });
 }
 
-    // ── Helpers ───────────────────────────────────
-
     private string BuildSystemPrompt(string category, string userName)
     {
         var basePrompt = $"Ești Nova, asistentul AI al platformei StudentHub UPT. " +
@@ -296,8 +289,7 @@ public async Task<IActionResult> Chat(int id, [FromBody] ChatDto dto)
         if (string.IsNullOrEmpty(email)) return null;
         return await _db.Students.FirstOrDefaultAsync(u => u.Email == email.ToLower());
     }
-
-    // ── DTOs ──────────────────────────────────────
+    
     public class CreateConversationDto
     {
         public string? Title { get; set; }

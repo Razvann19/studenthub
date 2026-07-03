@@ -23,8 +23,7 @@ public class OnlineTracker
         {
             if (_roomUsers.ContainsKey(room))
                 _roomUsers[room].Remove(userId);
-
-            // Verifică dacă userul mai e în alte camere
+            
             bool stillOnline = _roomUsers.Values.Any(users => users.Contains(userId));
             if (!stillOnline)
                 _platformUsers.Remove(userId);

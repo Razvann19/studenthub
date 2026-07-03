@@ -11,8 +11,7 @@ public class Message
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public bool IsDeleted { get; set; } = false;
     public bool IsEdited { get; set; } = false;
-
-    // Reply
+    
     public int? ReplyToId { get; set; }
     public string? ReplyToUserName { get; set; }
     public string? ReplyToText { get; set; }

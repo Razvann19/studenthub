@@ -29,8 +29,6 @@ public class CourseHub : Hub
         _hubUserService = hubUserService;
     }
 
-    // ── CHAT ──────────────────────────────────────
-
     public async Task JoinCourse(int courseId, int userId)
     {
         var room = $"course-{courseId}";
@@ -204,8 +202,7 @@ public class CourseHub : Hub
 
         await Clients.Group(message!.Room).SendAsync("MessageReactionsUpdated", messageId, reactions);
     }
-
-    // ── NOTES ─────────────────────────────────────
+    
 
     public async Task AddNote(int courseId, string? text, int userId, string userName,
         string? attachmentUrl, string? attachmentName, string? attachmentType, string? extractedText = null)
@@ -302,8 +299,7 @@ public class CourseHub : Hub
 
         await Clients.Group($"course-{noteId}").SendAsync("NoteReactionsUpdated", noteId, reactions);
     }
-
-    // ── Helpers ───────────────────────────────────
+    
 
     private static object MapMessage(Message m, List<MessageReaction> allReactions)
     {

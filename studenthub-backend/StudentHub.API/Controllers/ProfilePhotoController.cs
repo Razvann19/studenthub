@@ -43,16 +43,14 @@ public class ProfilePhotoController : ApiBaseController
         var user = await _db.Students.FirstOrDefaultAsync(u => u.Email == email.ToLower());
         if (user == null)
             return Fail("Utilizatorul nu a fost găsit.", 404);
-
-        // Sterge poza veche daca exista
+        
         if (!string.IsNullOrEmpty(user.ProfilePhotoUrl))
         {
             var oldPath = Path.Combine(_env.ContentRootPath, "Uploads", user.ProfilePhotoUrl);
             if (System.IO.File.Exists(oldPath))
                 System.IO.File.Delete(oldPath);
         }
-
-        // Salveaza poza noua
+        
         var uploadsDir = Path.Combine(_env.ContentRootPath, "Uploads", "profiles");
         Directory.CreateDirectory(uploadsDir);
 
@@ -74,7 +72,7 @@ public class ProfilePhotoController : ApiBaseController
 
             using var resized = cropped.Resize(new SKImageInfo(512, 512), SKFilterQuality.High);
             using var image = SKImage.FromBitmap(resized);
-            using var data = image.Encode(SKEncodedImageFormat.Png, 100); // ← PNG, quality 100
+            using var data = image.Encode(SKEncodedImageFormat.Png, 100);
             using var fileStream = new FileStream(filePath, FileMode.Create);
             data.SaveTo(fileStream);
         }

@@ -54,12 +54,11 @@ public class AuthService : IAuthService
             if (string.IsNullOrEmpty(user.EntraObjectId) && !string.IsNullOrEmpty(objectId))
                 user.EntraObjectId = objectId;
 
-            user.LastSeenAt = DateTime.UtcNow; // ← adaugă
+            user.LastSeenAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
             isFirstLogin = user.StudyType == null;
         }
-
-        // Daca studentul e admin, creeaza cont Identity daca nu exista
+        
         if (user.IsAdmin)
         {
             var identityUser = await _userManager.FindByEmailAsync(user.Email);
@@ -117,8 +116,6 @@ public class AuthService : IAuthService
         await _db.SaveChangesAsync();
         return MapToUserInfo(user);
     }
-
-    // ── helpers private ──────────────────────────────────────────
 
     private async Task<User> GetUserFromPrincipalAsync(ClaimsPrincipal principal)
     {

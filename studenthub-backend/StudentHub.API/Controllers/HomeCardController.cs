@@ -16,8 +16,7 @@ public class HomeCardController : ApiBaseController
     {
         _db = db;
     }
-
-    // Public — pentru pagina de home
+    
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> GetAll()
@@ -29,8 +28,7 @@ public class HomeCardController : ApiBaseController
             .ToListAsync();
         return Success(cards);
     }
-
-    // Admin only de la aici incolo
+    
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> Create([FromBody] HomeCardRequest request)

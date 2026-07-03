@@ -4,11 +4,9 @@ public class NoteIdService
 {
     private static readonly char[] AllowedChars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".ToCharArray();
     
-    // Cuvinte obscene sau nedorite de evitat
     private static readonly HashSet<string> BlockedPatterns = new(StringComparer.OrdinalIgnoreCase)
     {
         "SEX", "XXX", "ASS", "FUK", "FCK", "SHT", "WTF", "OMG"
-        // adaugă mai multe după necesitate
     };
 
     private readonly Random _random = new();

@@ -16,8 +16,7 @@ public class LastSeenController : ApiBaseController
     {
         _db = db;
     }
-
-    // Salvează ultima dată văzută pentru o cameră
+    
     [HttpPost("{roomId}")]
     public async Task<IActionResult> UpdateLastSeen(string roomId)
     {
@@ -47,8 +46,7 @@ public class LastSeenController : ApiBaseController
         await _db.SaveChangesAsync();
         return Success(true);
     }
-
-    // Returnează numărul de mesaje nevăzute per cameră
+    
    [HttpGet("unread-counts")]
 public async Task<IActionResult> GetUnreadCounts()
 {
@@ -63,8 +61,7 @@ public async Task<IActionResult> GetUnreadCounts()
         .ToDictionaryAsync(x => x.RoomId, x => x.LastSeenAt);
 
     var result = new Dictionary<string, int>();
-
-    // O singură query pentru toate mesajele grupate pe room
+    
     var messageCounts = await _db.Messages
         .Where(m => m.UserId != user.Id)
         .GroupBy(m => m.Room)
@@ -75,19 +72,16 @@ public async Task<IActionResult> GetUnreadCounts()
     {
         if (lastSeenList.TryGetValue(roomData.Room, out var lastSeen))
         {
-            // Numără doar mesajele după lastSeen
             var unread = await _db.Messages
                 .CountAsync(m => m.Room == roomData.Room && m.CreatedAt > lastSeen && m.UserId != user.Id);
             if (unread > 0) result[roomData.Room] = unread;
         }
         else
         {
-            // Niciodată văzut — toate mesajele sunt noi
             if (roomData.Count > 0) result[roomData.Room] = roomData.Count;
         }
     }
-
-    // Notițe pentru cursuri
+    
     var courses = await _db.Courses.Select(c => c.Id).ToListAsync();
     foreach (var courseId in courses)
     {

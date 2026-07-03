@@ -28,8 +28,7 @@ public class MessageReportController : ApiBaseController
 
         var message = await _db.Messages.FindAsync(messageId);
         if (message == null) return NotFound();
-
-        // Verifica daca a mai raportat deja
+        
         var existing = await _db.MessageReports
             .FirstOrDefaultAsync(r => r.MessageId == messageId && r.UserId == userId);
 
