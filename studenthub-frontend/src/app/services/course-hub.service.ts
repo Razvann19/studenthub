@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import {BehaviorSubject, firstValueFrom} from 'rxjs';
+import {BehaviorSubject, firstValueFrom, Subject} from 'rxjs';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 import {HttpClient} from '@angular/common/http';
@@ -49,6 +49,9 @@ export class CourseHubService {
   private authService = inject(AuthService);
   private connection: signalR.HubConnection | null = null;
   private http = inject(HttpClient);
+  private newMessageSubject = new Subject<void>();
+  newMessage$ = this.newMessageSubject.asObservable();
+  private newMessageSub: any = null;
 
 
   private messagesSubject = new BehaviorSubject<CourseMessage[]>([]);
@@ -83,13 +86,13 @@ export class CourseHubService {
     this.connection.keepAliveIntervalInMilliseconds = 15000;
     this.connection.serverTimeoutInMilliseconds = 60000;
 
-    // ── Chat handlers ──
     this.connection.on('LoadMessages', (messages: CourseMessage[]) => {
       this.messagesSubject.next(messages);
     });
 
     this.connection.on('ReceiveMessage', (message: CourseMessage) => {
       this.messagesSubject.next([...this.messagesSubject.value, message]);
+      this.newMessageSubject.next();
     });
 
     this.connection.on('MessageEdited', (data: { messageId: number; newText: string }) => {

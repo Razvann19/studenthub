@@ -28,6 +28,7 @@ export class ActivityChatComponent implements OnInit, OnDestroy, AfterViewChecke
   public hubService = inject(ActivityHubService);
   private lastSeenService = inject(LastSeenService);
   private visibilityHandler: (() => void) | null = null;
+  private newMessageSub: any = null;
 
 
   @HostBinding('style.flex') flex = '1';
@@ -107,6 +108,9 @@ export class ActivityChatComponent implements OnInit, OnDestroy, AfterViewChecke
       }
     };
     document.addEventListener('visibilitychange', this.visibilityHandler);
+    this.newMessageSub = this.hubService.newMessage$.subscribe(() => {
+      this.shouldScrollToBottom = true;
+    });
   }
 
   ngOnDestroy(): void {
@@ -114,6 +118,9 @@ export class ActivityChatComponent implements OnInit, OnDestroy, AfterViewChecke
     if (this.visibilityHandler) {
       document.removeEventListener('visibilitychange', this.visibilityHandler);
       this.visibilityHandler = null;
+    }
+    if (this.newMessageSub) {
+      this.newMessageSub.unsubscribe();
     }
   }
 

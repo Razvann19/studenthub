@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { BehaviorSubject } from 'rxjs';
+import {BehaviorSubject, Subject} from 'rxjs';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 
@@ -69,6 +69,9 @@ export class ActivityHubService {
   private onlineCountSubject = new BehaviorSubject<number>(0);
   onlineCount$ = this.onlineCountSubject.asObservable();
 
+  private newMessageSubject = new Subject<void>();
+  newMessage$ = this.newMessageSubject.asObservable();
+
   async connect(activityId: number): Promise<void> {
     if (this.connection) await this.disconnect();
 
@@ -96,6 +99,7 @@ export class ActivityHubService {
 
     this.connection.on('ReceiveMessage', (message: ActivityMessage) => {
       this.messagesSubject.next([...this.messagesSubject.value, message]);
+      this.newMessageSubject.next();
     });
 
     this.connection.on('MessageEdited', (data: { messageId: number; newText: string }) => {

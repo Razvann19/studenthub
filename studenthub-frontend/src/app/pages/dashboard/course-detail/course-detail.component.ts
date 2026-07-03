@@ -34,6 +34,7 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
   private hasMarkedSeen = false;
   private isAutoScrolling = false;
   private visibilityHandler: (() => void) | null = null;
+  private newMessageSub: any = null;
 
   @HostBinding('style.flex') flex = '1';
   @HostBinding('style.display') display = 'flex';
@@ -110,6 +111,9 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
       }
     };
     document.addEventListener('visibilitychange', this.visibilityHandler);
+    this.newMessageSub = this.hubService.newMessage$.subscribe(() => {
+      this.shouldScrollToBottom = true;
+    });
   }
 
   ngAfterViewChecked(): void {
@@ -124,6 +128,9 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
     if (this.visibilityHandler) {
       document.removeEventListener('visibilitychange', this.visibilityHandler);
       this.visibilityHandler = null;
+    }
+    if (this.newMessageSub) {
+      this.newMessageSub.unsubscribe();
     }
   }
 

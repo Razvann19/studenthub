@@ -34,6 +34,7 @@ export class CantinaComponent implements OnInit, OnDestroy, AfterViewChecked {
   menuPosition = signal<{ top?: string; bottom?: string; left?: string; right?: string }>({});
   emojiLibraryPosition = signal<{ top: string; left: string }>({ top: '0', left: '0' });
   private visibilityHandler: (() => void) | null = null;
+  private newMessageSub: any = null;
 
   @HostBinding('style.flex') flex = '1';
   @HostBinding('style.overflow') overflow = 'hidden';
@@ -90,6 +91,10 @@ export class CantinaComponent implements OnInit, OnDestroy, AfterViewChecked {
       }
     };
     document.addEventListener('visibilitychange', this.visibilityHandler);
+
+    this.newMessageSub = this.chatService.newMessage$.subscribe(() => {
+      this.shouldScrollToBottom = true;
+    });
   }
 
   ngOnDestroy(): void {
@@ -97,6 +102,9 @@ export class CantinaComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (this.visibilityHandler) {
       document.removeEventListener('visibilitychange', this.visibilityHandler);
       this.visibilityHandler = null;
+    }
+    if (this.newMessageSub) {
+      this.newMessageSub.unsubscribe();
     }
   }
 

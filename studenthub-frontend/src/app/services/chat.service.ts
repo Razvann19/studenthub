@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { BehaviorSubject } from 'rxjs';
+import {BehaviorSubject, Subject} from 'rxjs';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 
@@ -36,6 +36,9 @@ export class ChatService {
   private messagesSubject = new BehaviorSubject<ChatMessage[]>([]);
   messages$ = this.messagesSubject.asObservable();
 
+  private newMessageSubject = new Subject<void>();
+  newMessage$ = this.newMessageSubject.asObservable();
+
   private connectedSubject = new BehaviorSubject<boolean>(false);
   connected$ = this.connectedSubject.asObservable();
 
@@ -61,6 +64,7 @@ export class ChatService {
     this.connection.on('ReceiveMessage', (message: ChatMessage) => {
       const current = this.messagesSubject.value;
       this.messagesSubject.next([...current, message]);
+      this.newMessageSubject.next();
     });
 
     this.connection.on('MessageEdited', (data: { messageId: number; newText: string }) => {
