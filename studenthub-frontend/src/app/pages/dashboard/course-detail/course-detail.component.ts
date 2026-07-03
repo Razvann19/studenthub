@@ -33,10 +33,9 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
   private lastSeenService = inject(LastSeenService);
   private hasMarkedSeen = false;
   private isAutoScrolling = false;
-
+  private visibilityHandler: (() => void) | null = null;
 
   @HostBinding('style.flex') flex = '1';
-  //@HostBinding('style.overflow') overflow = 'hidden';
   @HostBinding('style.display') display = 'flex';
   @HostBinding('style.flex-direction') flexDirection = 'column';
   @HostBinding('style.min-height') minHeight = '0';
@@ -50,7 +49,6 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
   activeTab = signal<'chat' | 'notes'>('chat');
   loading = signal(true);
   shouldScrollToBottom = true;
-
 
   messages$ = this.hubService.messages$;
   notes$ = this.hubService.notes$;
@@ -106,6 +104,17 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
 
     await this.lastSeenService.updateLastSeen(`course-${id}`);
 
+    // Reconnect când pagina devine vizibilă din nou (mobil)
+    this.visibilityHandler = async () => {
+      if (document.visibilityState === 'visible') {
+        const state = this.hubService.getConnectionState();
+        if (state !== 'Connected') {
+          await this.hubService.connect(id);
+          this.shouldScrollToBottom = true;
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', this.visibilityHandler);
   }
 
   ngAfterViewChecked(): void {
@@ -115,8 +124,13 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
     }
   }
 
-  ngOnDestroy(): void { this.hubService.disconnect(); }
-
+  ngOnDestroy(): void {
+    this.hubService.disconnect();
+    if (this.visibilityHandler) {
+      document.removeEventListener('visibilitychange', this.visibilityHandler);
+      this.visibilityHandler = null;
+    }
+  }
 
   private scrollToBottom(): void {
     try {
@@ -132,7 +146,6 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
 
   goBack(): void { this.router.navigate(['/dashboard/courses']); }
 
-  // ── Attachment helpers ────────────────────────
   getAttachmentUrl(url: string): string {
     return `${environment.apiUrl.replace('/api', '')}${url}`;
   }
@@ -177,14 +190,11 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
     return null;
   }
 
-  // ── Chat Attachment ───────────────────────────
-
   clearChatAttachment(): void {
     this.selectedChatFile.set(null);
     this.selectedChatFilePreview.set(null);
   }
 
-  // ── Note Attachment ───────────────────────────
   async onNoteFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
@@ -240,7 +250,6 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
     this.selectedNoteFilePreview.set(null);
   }
 
-  // ── Chat ──────────────────────────────────────
   async sendMessage(): Promise<void> {
     const text = this.chatText.trim();
     const file = this.selectedChatFile();
@@ -323,6 +332,7 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
     const base = environment.apiUrl;
     return `${base}/NoteAttachment/download?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}`;
   }
+
   get profilePhotoUrl(): string | null {
     const user = this.authService.currentUser;
     if (!user?.profilePhotoUrl) return null;
@@ -384,8 +394,6 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
     return this.hubService['messagesSubject'].value.find((m: any) => m.id === this.activeMenuId()) ?? null;
   }
 
-
-  // ── Notes ──────────────────────────────────────
   async addNote(): Promise<void> {
     const text = this.noteText.trim();
     const file = this.selectedNoteFile();
@@ -490,8 +498,6 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
     this.activeMenuId.set(null);
     this.activeEmojiId.set(null);
 
-
-    // Floating date
     const messageEls = el.querySelectorAll('[data-date]');
     let currentDate: string | null = null;
     for (const msgEl of Array.from(messageEls)) {
@@ -574,6 +580,7 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
     this.activeNoteEmojiId.set(this.activeNoteEmojiId() === noteId ? null : noteId);
     this.activeNoteMenuId.set(null);
   }
+
   replyingToNote = signal<any>(null);
 
   startReplyNote(note: any): void {
@@ -684,7 +691,6 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
     this.closeEmojiLibraryNote();
   }
 
-  // Search
   searchOpen = signal(false);
   searchQuery = signal('');
   searchResults = signal<number[]>([]);
@@ -789,6 +795,4 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
       this.showToast('⚠️ Ai raportat deja acest mesaj.');
     }
   }
-
 }
-

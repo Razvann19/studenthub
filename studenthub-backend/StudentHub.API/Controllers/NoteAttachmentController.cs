@@ -28,7 +28,6 @@ public class NoteAttachmentController : ApiBaseController
     {
         if (file == null || file.Length == 0)
             return Fail("Niciun fișier selectat.");
-
         var maxMb = 20;
         if (file.Length > maxMb * 1024 * 1024)
             return Fail($"Fișierul depășește {maxMb}MB.");
@@ -57,7 +56,6 @@ public class NoteAttachmentController : ApiBaseController
         var contentType = file.ContentType.ToLower();
         if (!allowedMimes.TryGetValue(ext, out var validMimes) || !validMimes.Contains(contentType))
             return Fail("Tipul MIME nu corespunde extensiei fișierului.");
-
         var originalBase = Path.GetFileNameWithoutExtension(file.FileName);
         originalBase = System.Text.RegularExpressions.Regex.Replace(originalBase, @"[^a-zA-Z0-9_\-\s]", "_");
         var safeOriginalName = originalBase.Trim('_').Trim() + ext;
@@ -70,8 +68,7 @@ public class NoteAttachmentController : ApiBaseController
 
         using (var stream = new FileStream(filePath, FileMode.Create))
             await file.CopyToAsync(stream);
-
-        // Extrage textul din PDF/DOCX
+        
         var fileType = ext.TrimStart('.');
         var extractedText = _textExtraction.ExtractText(filePath, fileType);
 

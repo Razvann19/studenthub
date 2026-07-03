@@ -22,7 +22,6 @@ builder.Services.AddSingleton<BadWordService>();
 builder.Services.AddSingleton<TextExtractionService>();
 builder.Services.AddScoped<HubUserService>();
 
-// Database
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("Default"),
@@ -34,7 +33,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
                 errorNumbersToAdd: null);
         }));
 
-// Identity DOAR pentru admin panel
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = false;
@@ -47,7 +45,6 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 .AddDefaultTokenProviders()
 .AddDefaultUI();
 
-// Cookie pentru admin panel
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Identity/Account/Login";
@@ -76,7 +73,6 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// Autentificare Entra ID
 builder.Services.AddAuthentication()
     .AddMicrosoftIdentityWebApi(
         builder.Configuration.GetSection("AzureAd"),
@@ -101,7 +97,6 @@ builder.Services.Configure<JwtBearerOptions>("Entra", options =>
     };
 });
 
-// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
@@ -115,8 +110,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Auto-migrate + Seed
-// Auto-migrate + Seed
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();

@@ -27,7 +27,7 @@ public class CoursesController : ApiBaseController
             .FirstOrDefaultAsync(u => u.Email == email.ToLower());
 
         if (user == null)
-            return Fail("Utilizatorul nu a fost găsit.", 404);
+            return Fail("Utilizatorul nu a fost gasit.", 404);
 
         if (string.IsNullOrEmpty(user.Section) || !user.Year.HasValue || string.IsNullOrEmpty(user.StudyType))
             return Success(new List<object>());

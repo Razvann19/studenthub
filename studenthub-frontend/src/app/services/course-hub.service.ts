@@ -208,4 +208,14 @@ export class CourseHubService {
     );
     return response.success ? 'ok' : 'already';
   }
+
+  getConnectionState(): string {
+    if (!this.connection) return 'Disconnected';
+    switch (this.connection.state) {
+      case signalR.HubConnectionState.Connected: return 'Connected';
+      case signalR.HubConnectionState.Connecting: return 'Connecting';
+      case signalR.HubConnectionState.Reconnecting: return 'Reconnecting';
+      default: return 'Disconnected';
+    }
+  }
 }
