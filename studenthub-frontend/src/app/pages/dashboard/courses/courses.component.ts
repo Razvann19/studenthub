@@ -39,7 +39,6 @@ export class CoursesComponent implements OnInit, OnDestroy {
     this.courses.set(courses);
     this.loading.set(false);
 
-    // Restaurare semestru salvat per secție+an
     const user = this.user;
     if (user?.section && user?.year) {
       const key = `semester_filter_${user.section}_${user.year}`;

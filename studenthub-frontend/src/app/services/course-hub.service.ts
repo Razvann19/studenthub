@@ -108,7 +108,6 @@ export class CourseHubService {
       ));
     });
 
-    // ── Notes handlers ──
     this.connection.on('LoadNotes', (notes: CourseNote[]) => {
       this.notesSubject.next(notes);
     });
@@ -133,7 +132,6 @@ export class CourseHubService {
       ));
     });
 
-    // ── Online count ──
     this.connection.on('OnlineCountUpdated', (count: number) => {
       this.onlineCountSubject.next(count);
     });
@@ -150,7 +148,6 @@ export class CourseHubService {
     this.connectedSubject.next(true);
   }
 
-  // ── Chat methods ──
   async sendMessage(
     courseId: number, text: string | null, userId: number, userName: string,
     replyToId: number | null = null, attachmentUrl: string | null = null,
@@ -171,7 +168,6 @@ export class CourseHubService {
     await this.connection?.invoke('ToggleMessageReaction', messageId, emoji, userId);
   }
 
-  // ── Notes methods ──
   async addNote(
     courseId: number, text: string | null, userId: number, userName: string,
     attachmentUrl: string | null = null, attachmentName: string | null = null,

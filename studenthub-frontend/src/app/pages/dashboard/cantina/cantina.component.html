@@ -1,6 +1,5 @@
 <div class="cantina-page" (click)="closeMenus()">
 
-  <!-- Header -->
   <div class="cantina-header">
     @if (searchOpen()) {
       <div class="search-bar" (click)="$event.stopPropagation()">
@@ -39,7 +38,6 @@
     }
   </div>
 
-  <!-- Mesaje -->
   <div class="messages-list" #messagesList (scroll)="onScroll($event)">
 
     <div class="floating-date" [class.floating-date--visible]="floatingDateVisible()">
@@ -134,7 +132,6 @@
 
                 </div>
 
-                <!-- Emoji quick picker — per mesaj, ok -->
                 <button class="msg-emoji-btn" (click)="toggleEmoji(msg.id, $event)">🙂</button>
 
                 @if (activeEmojiId() === msg.id) {
@@ -172,7 +169,6 @@
       }
     }
 
-    <!-- Meniu pozitionat dinamic — IN AFARA buclei -->
     @if (activeMenuId() && getActiveMsg()) {
       <div class="msg-menu-fixed"
            [style.top]="menuPosition().top"
@@ -220,8 +216,6 @@
     }
 
   </div>
-
-  <!-- Librarie emoji — IN AFARA buclei si messages-list -->
 
   @if (showScrollBtn()) {
     <button class="scroll-bottom-btn" (click)="scrollToBottomBtn()">↓</button>

@@ -1,6 +1,5 @@
 <nav class="navbar">
 
-  <!-- Stanga: Logo UPT + Hamburger -->
   <div class="navbar-left">
     <div class="navbar-logo" (click)="goToDashboard()" style="cursor:pointer;">
       <div class="logo-upt">
@@ -12,10 +11,8 @@
     </div>
   </div>
 
-  <!-- Dreapta: Limba + User -->
   <div class="navbar-right">
 
-    <!-- Selector limba -->
     <div class="lang-menu-wrapper">
       <button class="lang-btn" (click)="toggleLangMenu()">
         <span class="lang-flag">{{ currentLang() === 'RO' ? '🇷🇴' : '🇬🇧' }}</span>
@@ -35,7 +32,6 @@
       }
     </div>
 
-    <!-- User menu -->
     <div class="user-menu-wrapper">
       <button class="user-btn" (click)="toggleUserMenu()">
         <div class="user-avatar">

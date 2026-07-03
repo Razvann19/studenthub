@@ -20,23 +20,19 @@ export class EditProfileComponent implements OnInit {
   private http = inject(HttpClient);
   private academicOptionsService = inject(AcademicOptionsService);
 
-  // Form fields
   studyType = '';
   section = '';
   an = '';
   faculty = 'Automatică și Calculatoare';
 
-  // Academic options
   sectiiDisponibile = signal<string[]>([]);
   aniDisponibili = signal<string[]>([]);
   private academicOptions: AcademicOption[] = [];
 
-  // Photo
   currentPhotoUrl = signal<string | null>(null);
   previewPhotoUrl = signal<string | null>(null);
   selectedFile: File | null = null;
 
-  // State
   loading = signal(false);
   saving = signal(false);
   uploadingPhoto = signal(false);
@@ -86,7 +82,6 @@ export class EditProfileComponent implements OnInit {
 
       if (this.studyType) {
         await this.loadAcademicOptions(this.studyType);
-        // Seteaza anii dupa ce sectiile sunt incarcate
         if (this.section) {
           this.updateAni();
         }

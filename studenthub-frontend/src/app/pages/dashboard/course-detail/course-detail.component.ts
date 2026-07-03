@@ -54,7 +54,6 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
   notes$ = this.hubService.notes$;
   connected$ = this.hubService.connected$;
 
-  // Chat
   chatText = '';
   replyingTo = signal<any>(null);
   editingMessageId = signal<number | null>(null);
@@ -63,16 +62,13 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
   menuPosition = signal<{ top: string; left: string }>({ top: '0', left: '0' });
   showScrollBtn = signal(false);
 
-  // Chat Attachment
   selectedChatFile = signal<File | null>(null);
   selectedChatFilePreview = signal<string | null>(null);
   uploadingChatFile = signal(false);
 
-  // Notes
   noteText = '';
   editingNoteId = signal<number | null>(null);
 
-  // Note Attachment
   selectedNoteFile = signal<File | null>(null);
   selectedNoteFilePreview = signal<string | null>(null);
   uploadingNoteFile = signal(false);
@@ -104,7 +100,6 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
 
     await this.lastSeenService.updateLastSeen(`course-${id}`);
 
-    // Reconnect când pagina devine vizibilă din nou (mobil)
     this.visibilityHandler = async () => {
       if (document.visibilityState === 'visible') {
         const state = this.hubService.getConnectionState();

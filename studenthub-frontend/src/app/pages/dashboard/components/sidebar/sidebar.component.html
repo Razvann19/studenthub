@@ -1,6 +1,5 @@
 <aside class="sidebar" [class.sidebar--open]="isOpen()">
 
-  <!-- Info student -->
   <div class="sidebar-user">
     <div class="sidebar-user-badge">
       @if (user?.studyType) {
@@ -16,7 +15,6 @@
     <p class="sidebar-faculty">Automatică și Calculatoare</p>
   </div>
 
-  <!-- Navigatie -->
   <nav class="sidebar-nav">
     @for (item of navItems; track item.route) {
       <a

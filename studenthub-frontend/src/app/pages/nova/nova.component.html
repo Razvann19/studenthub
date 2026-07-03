@@ -1,21 +1,17 @@
 <div class="nova-page" (click)="closeMenus()">
 
-  <!-- Sidebar -->
   <div class="nova-sidebar" [class.nova-sidebar--open]="mobileSidebarOpen()">
 
-    <!-- Logo -->
     <div class="nova-logo">
       <span class="nova-logo-icon">🤖</span>
       <span class="nova-logo-text">Nova AI</span>
       <button class="nova-back-btn" (click)="handleBackBtn()" title="Înapoi">✕</button>
     </div>
 
-    <!-- New Chat -->
     <button class="nova-new-chat" (click)="newChat()">
       <span>✏️</span> Chat nou
     </button>
 
-    <!-- Categories -->
     <div class="nova-categories">
       <button class="nova-cat-btn" [class.nova-cat-btn--active]="activeCategory() === 'general'"
               (click)="setCategory('general')">
@@ -31,7 +27,6 @@
       </button>
     </div>
 
-    <!-- Conversations -->
     <div class="nova-conversations">
       @if (loadingConversations()) {
         <div class="nova-conv-loading">Se încarcă...</div>
@@ -78,11 +73,9 @@
     <div class="nova-mobile-overlay" (click)="mobileSidebarOpen.set(false)"></div>
   }
 
-  <!-- Main Chat -->
   <div class="nova-main">
 
     @if (!activeConversation()) {
-      <!-- Welcome screen -->
       <div class="nova-welcome">
       <button class="nova-sidebar-toggle nova-sidebar-toggle--welcome" (click)="toggleMobileSidebar()">☰</button>
       <div class="nova-welcome-icon">🤖</div>
@@ -94,8 +87,7 @@
       </div>
     } @else {
 
-      <!-- Chat header -->
-        <!-- Chat header -->
+
       <div class="nova-chat-header">
         <button class="nova-sidebar-toggle" (click)="toggleMobileSidebar()">☰</button>
         <div class="nova-chat-header-info">
@@ -104,10 +96,8 @@
         </div>
       </div>
 
-      <!-- Messages -->
       <div class="nova-messages" #messagesList>
 
-        <!-- Welcome message -->
         <div class="nova-message nova-message--assistant">
           <div class="nova-message-avatar">🤖</div>
           <div class="nova-message-bubble">
@@ -156,7 +146,6 @@
 
       </div>
 
-      <!-- Input -->
       <div class="nova-input-area">
         <div class="nova-input-row">
           <textarea #textInput

@@ -90,7 +90,6 @@ export class ActivityHubService {
     this.connection.keepAliveIntervalInMilliseconds = 15000;
     this.connection.serverTimeoutInMilliseconds = 60000;
 
-    // ── Message handlers ──
     this.connection.on('LoadMessages', (messages: ActivityMessage[]) => {
       this.messagesSubject.next(messages);
     });
@@ -115,7 +114,6 @@ export class ActivityHubService {
       ));
     });
 
-    // ── Poll handlers ──
     this.connection.on('LoadPolls', (polls: Poll[]) => {
       this.pollsSubject.next(polls);
     });
@@ -155,7 +153,6 @@ export class ActivityHubService {
       ));
     });
 
-    // ── Online count ──
     this.connection.on('OnlineCountUpdated', (count: number) => {
       this.onlineCountSubject.next(count);
     });
@@ -172,7 +169,6 @@ export class ActivityHubService {
     this.connectedSubject.next(true);
   }
 
-  // ── Message methods ──
   async sendMessage(activityId: number, text: string, userId: number, userName: string, replyToId: number | null = null): Promise<void> {
     await this.connection?.invoke('SendMessage', activityId, text, userId, userName, replyToId);
   }
@@ -189,7 +185,6 @@ export class ActivityHubService {
     await this.connection?.invoke('ToggleMessageReaction', messageId, emoji, userId, userName);
   }
 
-  // ── Poll methods ──
   async createPoll(activityId: number, question: string, allowUserOptions: boolean, options: string[], userId: number, userName: string): Promise<void> {
     await this.connection?.invoke('CreatePoll', activityId, question, allowUserOptions, options, userId, userName);
   }
@@ -219,6 +214,16 @@ export class ActivityHubService {
       await this.connection.stop();
       this.connection = null;
       this.connectedSubject.next(false);
+    }
+  }
+
+  getConnectionState(): string {
+    if (!this.connection) return 'Disconnected';
+    switch (this.connection.state) {
+      case signalR.HubConnectionState.Connected: return 'Connected';
+      case signalR.HubConnectionState.Connecting: return 'Connecting';
+      case signalR.HubConnectionState.Reconnecting: return 'Reconnecting';
+      default: return 'Disconnected';
     }
   }
 }

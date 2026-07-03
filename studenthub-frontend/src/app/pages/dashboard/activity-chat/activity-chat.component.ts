@@ -27,6 +27,8 @@ export class ActivityChatComponent implements OnInit, OnDestroy, AfterViewChecke
   private authService = inject(AuthService);
   public hubService = inject(ActivityHubService);
   private lastSeenService = inject(LastSeenService);
+  private visibilityHandler: (() => void) | null = null;
+
 
   @HostBinding('style.flex') flex = '1';
   @HostBinding('style.overflow') overflow = 'hidden';
@@ -92,10 +94,28 @@ export class ActivityChatComponent implements OnInit, OnDestroy, AfterViewChecke
     } finally {
       this.loading.set(false);
     }
+
     await this.lastSeenService.updateLastSeen(`activity-${id}`);
+
+    this.visibilityHandler = async () => {
+      if (document.visibilityState === 'visible') {
+        const state = this.hubService.getConnectionState();
+        if (state !== 'Connected') {
+          await this.hubService.connect(id);
+          this.shouldScrollToBottom = true;
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', this.visibilityHandler);
   }
 
-  ngOnDestroy(): void { this.hubService.disconnect(); }
+  ngOnDestroy(): void {
+    this.hubService.disconnect();
+    if (this.visibilityHandler) {
+      document.removeEventListener('visibilitychange', this.visibilityHandler);
+      this.visibilityHandler = null;
+    }
+  }
 
   ngAfterViewChecked(): void {
     if (this.shouldScrollToBottom) {

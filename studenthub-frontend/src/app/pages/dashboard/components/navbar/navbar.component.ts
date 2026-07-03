@@ -55,7 +55,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   get user() {
-    // Prioritate: user din DB, fallback: cont MSAL
     if (this.currentUser()) return this.currentUser();
 
     const account = this.msal.instance.getAllAccounts()[0];

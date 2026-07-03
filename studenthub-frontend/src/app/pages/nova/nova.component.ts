@@ -135,7 +135,6 @@ export class NovaComponent implements OnInit, AfterViewChecked {
       this.messages.update(m => [...m, assistantMsg]);
       this.shouldScrollToBottom = true;
 
-      // Reîncarcă conversațiile după primul mesaj ca să apară titlul generat
       if (isFirstMessage) {
         await this.loadConversations();
         const updated = this.conversations().find(c => c.id === conv.id);

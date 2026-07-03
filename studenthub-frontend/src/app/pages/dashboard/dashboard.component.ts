@@ -56,7 +56,6 @@ export class DashboardComponent implements OnInit {
   get user() {
     if (this.authService.currentUser) return this.authService.currentUser;
 
-    // Fallback din MSAL daca sync-ul nu s-a terminat
     const account = this.msal.instance.getAllAccounts()[0];
     if (account) {
       const parts = (account.name ?? account.username).split(' ');

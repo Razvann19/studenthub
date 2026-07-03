@@ -10,11 +10,9 @@
   <main class="dashboard-main">
     <router-outlet />
 
-    <!-- Home placeholder daca nu e nicio ruta activa -->
     @if (isHomePage()) {
       <div class="dashboard-home">
 
-        <!-- Banner -->
         <div class="dashboard-banner">
           <div class="banner-content">
             <h1 class="banner-title">
@@ -40,7 +38,7 @@
           <span class="platform-online-dot"></span>
            Studenti online: {{ platformOnlineCount() }}
         </div>
-        <!-- Carduri rapide -->
+
         <div class="quick-cards">
           <div class="quick-card" (click)="router.navigate(['/dashboard/courses'])" style="cursor:pointer;">
             <div class="quick-card-icon">📚</div>
@@ -63,14 +61,12 @@
     }
   </main>
 
-  <!-- Nova floating button -->
   @if (!isNovaFullscreen()) {
     <button class="nova-float-btn" (click)="toggleNova()" title="Nova AI">
       🤖
     </button>
   }
 
-  <!-- Nova Popup -->
   @if (showNovaPopup()) {
     <div class="nova-popup" (click)="$event.stopPropagation()">
       <div class="nova-popup-header">

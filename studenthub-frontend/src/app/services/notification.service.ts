@@ -35,7 +35,6 @@ export class NotificationService {
       .withAutomaticReconnect()
       .build();
 
-    // La fiecare mesaj nou actualizăm counts
     connection.on('ReceiveMessage', (message: any) => {
       if (message.userId !== userId) {
         this.incrementCount(message.room ?? this.getRoomFromPath(path));
@@ -49,7 +48,6 @@ export class NotificationService {
     });
 
     connection.on('MessageDeleted', () => {
-      // Nu scădem — lăsăm polling-ul să corecteze
     });
 
     await connection.start();

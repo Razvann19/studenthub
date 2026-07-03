@@ -24,11 +24,9 @@ export class AuthService {
   async initialize(): Promise<void> {
     await this.msal.instance.initialize();
 
-    // Proceseaza redirect-ul o singura data
     const redirectResult = await this.msal.instance.handleRedirectPromise();
 
     if (redirectResult?.account) {
-      // Tocmai a venit de la Microsoft cu succes
       this.msal.instance.setActiveAccount(redirectResult.account);
       await this.syncUser(true);
     }
@@ -45,13 +43,11 @@ export class AuthService {
   logout(): void {
     this.userSubject.next(null);
 
-    // Curata conturile din MSAL local fara redirect la Microsoft
     const accounts = this.msal.instance.getAllAccounts();
     accounts.forEach(account => {
       this.msal.instance.clearCache();
     });
 
-    // Redirect direct la home
     window.location.href = '/home';
   }
 
@@ -78,7 +74,6 @@ export class AuthService {
       );
       if (response.success) {
         const user = response.data.user;
-        // Reordoneaza numele: Prenume Nume → Nume Prenume
         if (user.fullName) {
           const parts = user.fullName.split(' ');
           user.fullName = parts.length > 1

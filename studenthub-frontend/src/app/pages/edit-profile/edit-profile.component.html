@@ -1,6 +1,5 @@
 <div class="edit-profile-page">
 
-  <!-- Breadcrumb -->
   <div class="breadcrumb">
     <button class="breadcrumb-home" (click)="goBack()">
       <i class="fa fa-home"></i>
@@ -19,14 +18,12 @@
 
     <div class="edit-wrapper">
 
-      <!-- ── Poza de profil ── -->
       <div class="edit-card">
         <div class="card-header">
           <h2>Poza de profil</h2>
         </div>
         <div class="card-body photo-section">
 
-          <!-- Avatar curent -->
           <div class="avatar-wrapper">
             @if (previewPhotoUrl()) {
               <img [src]="previewPhotoUrl()"
@@ -41,7 +38,6 @@
             }
           </div>
 
-          <!-- Actiuni poza -->
           <div class="photo-actions">
             <label class="btn btn-primary" for="photo-input">
               📷 Alege poza
@@ -78,14 +74,12 @@
         </div>
       </div>
 
-      <!-- ── Date academice ── -->
       <div class="edit-card">
         <div class="card-header">
           <h2>Date academice</h2>
         </div>
         <div class="card-body">
 
-          <!-- Tip studiu -->
           <div class="form-group">
             <label class="form-label">Tip studiu</label>
             <div class="radio-group">
@@ -106,7 +100,6 @@
             </div>
           </div>
 
-          <!-- Sectie -->
           <div class="form-group" [class.form-group--disabled]="!studyType">
             <label class="form-label">Secție</label>
             <select class="form-select" [(ngModel)]="section"
@@ -119,7 +112,6 @@
             </select>
           </div>
 
-          <!-- An -->
           <div class="form-group" [class.form-group--disabled]="!section">
             <label class="form-label">An</label>
             <select class="form-select" [(ngModel)]="an" [disabled]="!section">
@@ -139,8 +131,6 @@
             </p>
           </div>
 
-
-          <!-- Eroare / Succes -->
           @if (error()) {
             <div class="alert alert-error">{{ error() }}</div>
           }
@@ -148,7 +138,6 @@
             <div class="alert alert-success">{{ success() }}</div>
           }
 
-          <!-- Butoane -->
           <div class="form-actions">
             <button
               class="btn btn-orange"
@@ -168,7 +157,6 @@
         </div>
       </div>
 
-      <!-- ── Securitate ── -->
       <div class="edit-card">
         <div class="card-header">
           <h2>Securitate</h2>

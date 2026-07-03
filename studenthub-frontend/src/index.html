@@ -30,26 +30,21 @@
 
 <script>
   function hideGoogleTranslate() {
-    // Ascunde iframe-ul banner
     const banners = document.querySelectorAll('.goog-te-banner-frame, .skiptranslate');
     banners.forEach(el => {
       el.style.display = 'none';
       el.style.visibility = 'hidden';
     });
 
-    // Reseteza body top
     document.body.style.top = '0px';
     document.body.style.position = 'static';
 
-    // Ascunde div-ul container
     const gtDiv = document.getElementById('google_translate_element');
     if (gtDiv) gtDiv.style.display = 'none';
   }
 
-  // Ruleaza des la inceput
   setInterval(hideGoogleTranslate, 100);
 
-  // Si la orice modificare DOM
   const observer = new MutationObserver(hideGoogleTranslate);
   observer.observe(document.body, { childList: true, subtree: true });
 </script>
@@ -64,7 +59,6 @@
 
   window.triggerTranslate = function(lang) {
     if (lang === 'RO') {
-      // Reseteaza la romana
       const iframe = document.querySelector('.goog-te-banner-frame');
       if (iframe) {
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;

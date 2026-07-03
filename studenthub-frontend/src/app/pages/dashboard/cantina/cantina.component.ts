@@ -33,7 +33,7 @@ export class CantinaComponent implements OnInit, OnDestroy, AfterViewChecked {
   libraryForMessageId = signal<number | null>(null);
   menuPosition = signal<{ top?: string; bottom?: string; left?: string; right?: string }>({});
   emojiLibraryPosition = signal<{ top: string; left: string }>({ top: '0', left: '0' });
-
+  private visibilityHandler: (() => void) | null = null;
 
   @HostBinding('style.flex') flex = '1';
   @HostBinding('style.overflow') overflow = 'hidden';
@@ -58,17 +58,13 @@ export class CantinaComponent implements OnInit, OnDestroy, AfterViewChecked {
   floatingDateVisible = signal(false);
   floatingDateTimeout: any = null;
 
-  // Menu
   activeMenuId = signal<number | null>(null);
   activeEmojiId = signal<number | null>(null);
 
-  // Edit
   editingMessageId = signal<number | null>(null);
 
-  // Reply
   replyingTo = signal<ChatMessage | null>(null);
 
-  // Reaction tooltip
   reactionTooltip = signal<{ reactions: any[]; x: number; y: number } | null>(null);
   waitIntervals = WAIT_INTERVALS;
   quickEmojis = QUICK_EMOJIS;
@@ -83,9 +79,26 @@ export class CantinaComponent implements OnInit, OnDestroy, AfterViewChecked {
     } finally {
       this.loading.set(false);
     }
+
+    this.visibilityHandler = async () => {
+      if (document.visibilityState === 'visible') {
+        const state = this.chatService.getConnectionState();
+        if (state !== 'Connected') {
+          await this.chatService.connect(ROOM);
+          this.shouldScrollToBottom = true;
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', this.visibilityHandler);
   }
 
-  ngOnDestroy(): void { this.chatService.disconnect(); }
+  ngOnDestroy(): void {
+    this.chatService.disconnect();
+    if (this.visibilityHandler) {
+      document.removeEventListener('visibilitychange', this.visibilityHandler);
+      this.visibilityHandler = null;
+    }
+  }
 
   ngAfterViewChecked(): void {
     if (this.shouldScrollToBottom) {
@@ -130,12 +143,10 @@ export class CantinaComponent implements OnInit, OnDestroy, AfterViewChecked {
     clearTimeout(this.floatingDateTimeout);
     this.floatingDateTimeout = setTimeout(() => this.floatingDateVisible.set(false), 2000);
 
-    // Inchide meniurile la scroll
     this.activeMenuId.set(null);
     this.activeEmojiId.set(null);
   }
 
-  // ── Menu ──────────────────────────────────────
 
   closeMenus(): void {
     this.activeMenuId.set(null);
@@ -143,7 +154,6 @@ export class CantinaComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.reactionTooltip.set(null);
   }
 
-  // ── Edit ──────────────────────────────────────
   startEdit(msg: ChatMessage): void {
     this.editingMessageId.set(msg.id);
     this.text = msg.text ?? '';
@@ -158,7 +168,6 @@ export class CantinaComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.selectedInterval.set(null);
   }
 
-  // ── Reply ─────────────────────────────────────
   startReply(msg: ChatMessage): void {
     this.replyingTo.set(msg);
     this.activeMenuId.set(null);
@@ -175,14 +184,12 @@ export class CantinaComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.activeMenuId.set(null);
   }
 
-  // ── Delete ────────────────────────────────────
   async deleteMessage(msgId: number): Promise<void> {
     if (!confirm('Ștergi acest mesaj?')) return;
     await this.chatService.deleteMessage(msgId);
     this.activeMenuId.set(null);
   }
 
-  // ── Reaction ──────────────────────────────────
   async toggleReaction(msgId: number, emoji: string): Promise<void> {
     await this.chatService.toggleReaction(msgId, emoji);
     this.activeEmojiId.set(null);
@@ -207,7 +214,6 @@ export class CantinaComponent implements OnInit, OnDestroy, AfterViewChecked {
     return reaction?.users.includes(this.currentUser?.fullName ?? '') ?? false;
   }
 
-  // ── Send ──────────────────────────────────────
   selectInterval(interval: string): void {
     this.selectedInterval.set(interval);
     this.showIntervals.set(false);
@@ -336,13 +342,11 @@ export class CantinaComponent implements OnInit, OnDestroy, AfterViewChecked {
     let left = 50;
 
     if (msgWrapper) {
-      // Gaseste bubble-ul, nu wrapper-ul
       const bubble = msgWrapper.querySelector('.message-bubble') as HTMLElement;
       const bubbleRect = bubble.getBoundingClientRect();
       const spaceBelow = window.innerHeight - bubbleRect.bottom;
       const isOwn = msgWrapper.classList.contains('message-wrapper--own');
 
-      // Vertical
       if (spaceBelow >= pickerHeight) {
         top = bubbleRect.bottom + 4;
       } else {
@@ -350,7 +354,6 @@ export class CantinaComponent implements OnInit, OnDestroy, AfterViewChecked {
       }
       top = Math.max(4, Math.min(top, window.innerHeight - pickerHeight - 4));
 
-      // Horizontal
       if (isOwn) {
         left = bubbleRect.left - pickerWidth - 4;
         if (left < 4) {
@@ -377,7 +380,6 @@ export class CantinaComponent implements OnInit, OnDestroy, AfterViewChecked {
     return msgs.find(m => m.id === this.activeMenuId()) ?? null;
   }
 
-  // Search
   searchOpen = signal(false);
   searchQuery = signal('');
   searchResults = signal<number[]>([]); // array de msg id-uri
