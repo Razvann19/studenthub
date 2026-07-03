@@ -123,13 +123,13 @@
 
               <div class="nova-message-bubble">
                 @if (msg.role === 'user') {
-                  @if (msg.content) {
-                    {{ msg.content }}
-                  }
                   @if (msg.attachmentName) {
                     <div class="nova-attachment-badge">
                       📎 {{ msg.attachmentName }}
                     </div>
+                  }
+                  @if (msg.content) {
+                    <div>{{ msg.content }}</div>
                   }
                 } @else {
                   <span [innerHTML]="parseMarkdown(msg.content)"></span>
