@@ -122,10 +122,17 @@
               }
 
               <div class="nova-message-bubble">
-                @if (msg.role === 'assistant') {
-                  <span [innerHTML]="parseMarkdown(msg.content)"></span>
+                @if (msg.role === 'user') {
+                  @if (msg.content) {
+                    {{ msg.content }}
+                  }
+                  @if (msg.attachmentName) {
+                    <div class="nova-attachment-badge">
+                      📎 {{ msg.attachmentName }}
+                    </div>
+                  }
                 } @else {
-                  {{ msg.content }}
+                  <span [innerHTML]="parseMarkdown(msg.content)"></span>
                 }
                 <span class="nova-message-time">{{ formatTime(msg.createdAt) }}</span>
               </div>
@@ -166,7 +173,7 @@
                     rows="1"></textarea>
           <button class="nova-send-btn"
                   (click)="sendMessage()"
-                  [disabled]="!messageText.trim() || sendingMessage()">
+                  [disabled]="(!messageText.trim() && !selectedFile()) || sendingMessage()"F>
             @if (sendingMessage()) {
               <span class="nova-send-spinner"></span>
             } @else {

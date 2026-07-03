@@ -115,7 +115,8 @@ export class NovaComponent implements OnInit, AfterViewChecked {
     const userMsg: AiMessage = {
       id: Date.now(),
       role: 'user',
-      content: text || (file ? `📎 ${file.name}` : ''),
+      content: text || '',
+      attachmentName: file?.name ?? undefined,
       createdAt: new Date().toISOString()
     };
     this.messages.update(m => [...m, userMsg]);
@@ -288,4 +289,5 @@ export class NovaComponent implements OnInit, AfterViewChecked {
     this.selectedFile.set(null);
     this.selectedFileName.set(null);
   }
+
 }

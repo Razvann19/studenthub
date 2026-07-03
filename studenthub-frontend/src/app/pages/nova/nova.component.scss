@@ -592,3 +592,13 @@ $sidebar-width: 280px;
   transition: opacity 0.15s;
   &:hover { opacity: 1; }
 }
+.nova-attachment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255,255,255,0.2);
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
