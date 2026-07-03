@@ -104,18 +104,18 @@ export class NovaComponent implements OnInit, AfterViewChecked {
 
   async sendMessage(): Promise<void> {
     const text = this.messageText.trim();
-    if (!text || this.sendingMessage()) return;
+    const file = this.selectedFile();
+    if (!text && !file || this.sendingMessage()) return;
 
     const conv = this.activeConversation();
     if (!conv) return;
 
-    const isFirstMessage = conv.title === 'Conversație nouă'
-    console.log('isFirstMessage:', isFirstMessage, 'title:', conv.title);
+    const isFirstMessage = conv.title === 'Conversație nouă';
 
     const userMsg: AiMessage = {
       id: Date.now(),
       role: 'user',
-      content: text,
+      content: text || (file ? `📎 ${file.name}` : ''),
       createdAt: new Date().toISOString()
     };
     this.messages.update(m => [...m, userMsg]);
@@ -124,7 +124,20 @@ export class NovaComponent implements OnInit, AfterViewChecked {
     this.sendingMessage.set(true);
 
     try {
-      const response = await this.novaService.chat(conv.id, text);
+      let fileContext: string | null = null;
+
+      if (file) {
+        this.uploadingFile.set(true);
+        const result = await this.novaService.uploadFile(file);
+        this.uploadingFile.set(false);
+        if (result?.extractedText) {
+          fileContext = result.extractedText;
+        }
+        this.selectedFile.set(null);
+        this.selectedFileName.set(null);
+      }
+
+      const response = await this.novaService.chat(conv.id, text, fileContext ?? undefined);
 
       const assistantMsg: AiMessage = {
         id: Date.now() + 1,
@@ -142,6 +155,7 @@ export class NovaComponent implements OnInit, AfterViewChecked {
       }
     } finally {
       this.sendingMessage.set(false);
+      this.uploadingFile.set(false);
     }
   }
 
@@ -239,5 +253,39 @@ export class NovaComponent implements OnInit, AfterViewChecked {
   parseMarkdown(text: string): SafeHtml {
     const html = marked.parse(text) as string;
     return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
+
+  selectedFile = signal<File | null>(null);
+  selectedFileName = signal<string | null>(null);
+  uploadingFile = signal(false);
+
+  async onFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const file = input.files[0];
+
+    const allowed = ['.pdf', '.doc', '.docx', '.txt'];
+    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+
+    if (!allowed.includes(ext)) {
+      alert('Doar PDF, Word și TXT sunt acceptate.');
+      input.value = '';
+      return;
+    }
+
+    if (file.size > 20 * 1024 * 1024) {
+      alert('Fișierul depășește 20MB.');
+      input.value = '';
+      return;
+    }
+
+    this.selectedFile.set(file);
+    this.selectedFileName.set(file.name);
+    input.value = '';
+  }
+
+  clearFile(): void {
+    this.selectedFile.set(null);
+    this.selectedFileName.set(null);
   }
 }

@@ -24,7 +24,6 @@ $sidebar-width: 280px;
   z-index: 50;
 }
 
-// ── Sidebar ───────────────────────────────────────
 .nova-sidebar {
   width: $sidebar-width;
   background: $blue;
@@ -213,7 +212,6 @@ $sidebar-width: 280px;
   &:focus { outline: none; border-color: $orange; }
 }
 
-// ── Main ──────────────────────────────────────────
 .nova-main {
   flex: 1;
   display: flex;
@@ -223,7 +221,6 @@ $sidebar-width: 280px;
   min-height: 0;
 }
 
-// ── Welcome ───────────────────────────────────────
 .nova-welcome {
   flex: 1;
   display: flex;
@@ -267,7 +264,6 @@ $sidebar-width: 280px;
   &:hover { background: #1a3460; }
 }
 
-// ── Chat Header ───────────────────────────────────
 .nova-chat-header {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid $gray-200;
@@ -292,7 +288,6 @@ $sidebar-width: 280px;
   color: $gray-500;
 }
 
-// ── Messages ──────────────────────────────────────
 .nova-messages {
   flex: 1;
   overflow-y: auto;
@@ -369,7 +364,6 @@ $sidebar-width: 280px;
   .nova-message--user & { color: rgba(255,255,255,0.6); }
 }
 
-// ── Loading ───────────────────────────────────────
 .nova-loading {
   display: flex;
   gap: 0.3rem;
@@ -392,7 +386,6 @@ $sidebar-width: 280px;
   30% { transform: translateY(-8px); }
 }
 
-// ── Input ─────────────────────────────────────────
 .nova-input-area {
   padding: 1rem 1.5rem;
   border-top: 1px solid $gray-200;
@@ -566,4 +559,36 @@ $sidebar-width: 280px;
   .nova-welcome {
     position: relative;
   }
+}
+.nova-file-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(15, 31, 61, 0.06);
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  color: #374151;
+
+  button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-left: auto;
+    &:hover { color: #dc2626; }
+  }
+}
+
+.nova-attach-btn {
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0.4rem;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+  &:hover { opacity: 1; }
 }

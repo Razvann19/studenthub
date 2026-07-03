@@ -147,7 +147,17 @@
       </div>
 
       <div class="nova-input-area">
+        @if (selectedFileName()) {
+          <div class="nova-file-preview">
+            <span>📎 {{ selectedFileName() }}</span>
+            <button (click)="clearFile()">✕</button>
+          </div>
+        }
         <div class="nova-input-row">
+          <label class="nova-attach-btn" title="Atașează document">
+            📎
+            <input type="file" accept=".pdf,.doc,.docx,.txt" (change)="onFileSelected($event)" style="display:none" />
+          </label>
           <textarea #textInput
                     class="nova-input"
                     [(ngModel)]="messageText"

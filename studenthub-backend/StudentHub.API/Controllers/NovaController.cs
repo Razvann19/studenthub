@@ -122,7 +122,7 @@ public class NovaController : ApiBaseController
         return Success(messages);
     }
 
-   [HttpPost("conversations/{id}/chat")]
+[HttpPost("conversations/{id}/chat")]
 public async Task<IActionResult> Chat(int id, [FromBody] ChatDto dto)
 {
     var user = await GetCurrentUser();
@@ -133,7 +133,7 @@ public async Task<IActionResult> Chat(int id, [FromBody] ChatDto dto)
         .FirstOrDefaultAsync(c => c.Id == id && c.UserId == user.Id);
 
     if (conversation == null) return Fail("Conversație negăsită.");
-    
+
     var isFirstMessage = !conversation.Messages.Any();
 
     var systemPrompt = BuildSystemPrompt(conversation.Category, user.FullName);
@@ -157,6 +157,13 @@ public async Task<IActionResult> Chat(int id, [FromBody] ChatDto dto)
             }
         }
     }
+
+    var fileContext = "";
+    if (!string.IsNullOrEmpty(dto.FileContext))
+    {
+        fileContext = $"\n\nConținut document atașat de utilizator:\n{dto.FileContext}\n";
+    }
+
     var userMessage = new AiMessage
     {
         ConversationId = id,
@@ -165,16 +172,20 @@ public async Task<IActionResult> Chat(int id, [FromBody] ChatDto dto)
         CreatedAt = DateTime.UtcNow
     };
     _db.AiMessages.Add(userMessage);
+
     var history = conversation.Messages
         .OrderBy(m => m.CreatedAt)
         .TakeLast(20)
         .Select(m => new { role = m.Role, content = m.Content })
         .ToList<object>();
+
     var currentMessage = new List<object>
     {
-        new { role = "user", content = $"{dto.Message}{noteContext}" }
+        new { role = "user", content = $"{dto.Message}{noteContext}{fileContext}" }
     };
+
     var allMessages = history.Concat(currentMessage).ToList();
+
     var requestBody = new
     {
         model = "claude-sonnet-4-6",
@@ -182,6 +193,7 @@ public async Task<IActionResult> Chat(int id, [FromBody] ChatDto dto)
         system = systemPrompt,
         messages = allMessages
     };
+
     var request = new HttpRequestMessage(HttpMethod.Post, "https://api.anthropic.com/v1/messages");
     request.Headers.Add("x-api-key", _config["Anthropic:ApiKey"]);
     request.Headers.Add("anthropic-version", "2023-06-01");
@@ -208,7 +220,7 @@ public async Task<IActionResult> Chat(int id, [FromBody] ChatDto dto)
         CreatedAt = DateTime.UtcNow
     };
     _db.AiMessages.Add(assistantMessage);
-    
+
     if (isFirstMessage && !string.IsNullOrEmpty(dto.Message))
     {
         try
@@ -257,6 +269,8 @@ public async Task<IActionResult> Chat(int id, [FromBody] ChatDto dto)
     return Success(new { message = assistantText, conversationId = id });
 }
 
+
+
     private string BuildSystemPrompt(string category, string userName)
     {
         var basePrompt = $"Ești Nova, asistentul AI al platformei StudentHub UPT. " +
@@ -304,5 +318,6 @@ public async Task<IActionResult> Chat(int id, [FromBody] ChatDto dto)
     public class ChatDto
     {
         public string? Message { get; set; }
+        public string? FileContext { get; set; }
     }
 }

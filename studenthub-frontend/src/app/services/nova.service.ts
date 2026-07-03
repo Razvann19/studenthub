@@ -64,11 +64,11 @@ export class NovaService {
     return res.success ? res.data : [];
   }
 
-  async chat(conversationId: number, message: string): Promise<string> {
+  async chat(conversationId: number, message: string, fileContext?: string): Promise<string> {
     const res = await firstValueFrom(
       this.http.post<{ success: boolean; data: { message: string } }>(
         this.base + `/conversations/${conversationId}/chat`,
-        { message }
+        { message, fileContext }
       )
     );
     return res.data.message;
@@ -86,4 +86,24 @@ export class NovaService {
     );
     return res.data;
   }
+
+  async uploadFile(file: File): Promise<{ extractedText: string | null; originalName: string } | null> {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await firstValueFrom(
+        this.http.post<{ success: boolean; data: { url: string; originalName: string; type: string; extractedText?: string | null } }>(
+          `${environment.apiUrl}/NoteAttachment/upload`, formData
+        )
+      );
+      if (res.success) {
+        return { extractedText: res.data.extractedText ?? null, originalName: res.data.originalName };
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  }
+
+
 }
