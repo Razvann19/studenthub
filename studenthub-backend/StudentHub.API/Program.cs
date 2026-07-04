@@ -22,10 +22,15 @@ builder.Services.AddSingleton<BadWordService>();
 builder.Services.AddSingleton<TextExtractionService>();
 builder.Services.AddScoped<HubUserService>();
 
+builder.Services.Configure<Microsoft.AspNetCore.Mvc.MvcOptions>(options =>
+{
+    options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+});
 
 builder.Services.Configure<RouteOptions>(options =>
 {
-    options.AppendTrailingSlash = true;
+    options.LowercaseUrls = false;
+    options.AppendTrailingSlash = false;
 });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
