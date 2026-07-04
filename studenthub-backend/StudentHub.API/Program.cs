@@ -22,6 +22,12 @@ builder.Services.AddSingleton<BadWordService>();
 builder.Services.AddSingleton<TextExtractionService>();
 builder.Services.AddScoped<HubUserService>();
 
+
+builder.Services.Configure<RouteOptions>(options =>
+{
+    options.AppendTrailingSlash = true;
+});
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("Default"),
