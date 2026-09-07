@@ -235,14 +235,24 @@ export class CantinaComponent implements OnInit, OnDestroy, AfterViewChecked {
     const interval = this.selectedInterval();
     if (!text && !interval) return;
 
+    if (text.length > 1000) {
+      alert('Mesajul depășește limita de 1000 de caractere.');
+      return;
+    }
+
     const editId = this.editingMessageId();
-    if (editId) {
-      await this.chatService.editMessage(editId, text);
-      this.editingMessageId.set(null);
-    } else {
-      this.shouldScrollToBottom = true;
-      await this.chatService.sendMessage(ROOM, text || null, interval, this.replyingTo()?.id ?? null);
-      this.replyingTo.set(null);
+    try {
+      if (editId) {
+        await this.chatService.editMessage(editId, text);
+        this.editingMessageId.set(null);
+      } else {
+        this.shouldScrollToBottom = true;
+        await this.chatService.sendMessage(ROOM, text || null, interval, this.replyingTo()?.id ?? null);
+        this.replyingTo.set(null);
+      }
+    } catch (err: any) {
+      alert(err?.message ?? 'Mesajul nu a putut fi trimis.');
+      return;
     }
 
     this.text = '';
@@ -478,6 +488,4 @@ export class CantinaComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.showToast('⚠️ Ai raportat deja acest mesaj.');
     }
   }
-
-
 }

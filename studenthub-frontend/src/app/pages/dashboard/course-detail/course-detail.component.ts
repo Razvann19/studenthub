@@ -257,6 +257,11 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
     const file = this.selectedChatFile();
     if (!text && !file) return;
 
+    if (text.length > 1000) {
+      alert('Mesajul depășește limita de 1000 de caractere.');
+      return;
+    }
+
     const user = this.currentUser;
     if (!user) return;
 
@@ -276,17 +281,22 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
       attachmentType = result.type;
     }
 
-    if (editId) {
-      await this.hubService.editMessage(editId, text, user.id);
-      this.editingMessageId.set(null);
-    } else {
-      this.shouldScrollToBottom = true;
-      await this.hubService.sendMessage(
-        this.courseId(), text || null, user.id, user.fullName,
-        this.replyingTo()?.id ?? null,
-        attachmentUrl, attachmentName, attachmentType
-      );
-      this.replyingTo.set(null);
+    try {
+      if (editId) {
+        await this.hubService.editMessage(editId, text, user.id);
+        this.editingMessageId.set(null);
+      } else {
+        this.shouldScrollToBottom = true;
+        await this.hubService.sendMessage(
+          this.courseId(), text || null, user.id, user.fullName,
+          this.replyingTo()?.id ?? null,
+          attachmentUrl, attachmentName, attachmentType
+        );
+        this.replyingTo.set(null);
+      }
+    } catch (err: any) {
+      alert(err?.message ?? 'Mesajul nu a putut fi trimis.');
+      return;
     }
 
     this.chatText = '';
@@ -401,6 +411,11 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
     const file = this.selectedNoteFile();
     if (!text && !file) return;
 
+    if (text.length > 2000) {
+      alert('Notița depășește limita de 2000 de caractere.');
+      return;
+    }
+
     const user = this.currentUser;
     if (!user) return;
 
@@ -422,14 +437,19 @@ export class CourseDetailComponent implements OnInit, OnDestroy, AfterViewChecke
       extractedText = result.extractedText ?? null;
     }
 
-    if (editId) {
-      await this.hubService.editNote(editId, text, user.id);
-      this.editingNoteId.set(null);
-    } else {
-      await this.hubService.addNote(
-        this.courseId(), text || null, user.id, user.fullName,
-        attachmentUrl, attachmentName, attachmentType, extractedText
-      );
+    try {
+      if (editId) {
+        await this.hubService.editNote(editId, text, user.id);
+        this.editingNoteId.set(null);
+      } else {
+        await this.hubService.addNote(
+          this.courseId(), text || null, user.id, user.fullName,
+          attachmentUrl, attachmentName, attachmentType, extractedText
+        );
+      }
+    } catch (err: any) {
+      alert(err?.message ?? 'Notița nu a putut fi salvată.');
+      return;
     }
 
     this.noteText = '';

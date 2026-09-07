@@ -66,7 +66,7 @@
           <div class="message-wrapper"
                [class.message-wrapper--own]="isOwnMessage(msg)"
                [attr.data-date]="msg.createdAt"
-                [attr.data-msg-id]="msg.id">
+               [attr.data-msg-id]="msg.id">
 
             @if (!isOwnMessage(msg)) {
               <div class="message-avatar">{{ getInitials(msg.userName) }}</div>
@@ -294,6 +294,7 @@
                 [(ngModel)]="text"
                 (keydown)="onKeydown($event)"
                 [placeholder]="editingMessageId() ? 'Editează mesajul...' : 'Scrie un mesaj...'"
+                maxlength="1000"
                 rows="1">
       </textarea>
 

@@ -144,20 +144,30 @@ export class ActivityChatComponent implements OnInit, OnDestroy, AfterViewChecke
     const text = this.chatText.trim();
     if (!text) return;
 
+    if (text.length > 1000) {
+      alert('Mesajul depășește limita de 1000 de caractere.');
+      return;
+    }
+
     const user = this.currentUser;
     if (!user) return;
 
     const editId = this.editingMessageId();
-    if (editId) {
-      await this.hubService.editMessage(editId, text, user.id);
-      this.editingMessageId.set(null);
-    } else {
-      this.shouldScrollToBottom = true;
-      await this.hubService.sendMessage(
-        this.activityId(), text, user.id, user.fullName,
-        this.replyingTo()?.id ?? null
-      );
-      this.replyingTo.set(null);
+    try {
+      if (editId) {
+        await this.hubService.editMessage(editId, text, user.id);
+        this.editingMessageId.set(null);
+      } else {
+        this.shouldScrollToBottom = true;
+        await this.hubService.sendMessage(
+          this.activityId(), text, user.id, user.fullName,
+          this.replyingTo()?.id ?? null
+        );
+        this.replyingTo.set(null);
+      }
+    } catch (err: any) {
+      alert(err?.message ?? 'Mesajul nu a putut fi trimis.');
+      return;
     }
     this.chatText = '';
   }
@@ -567,5 +577,4 @@ export class ActivityChatComponent implements OnInit, OnDestroy, AfterViewChecke
       this.showToast('⚠️ Ai raportat deja acest mesaj.');
     }
   }
-
 }

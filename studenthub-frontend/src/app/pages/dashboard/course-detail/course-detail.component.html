@@ -233,6 +233,7 @@
                   [(ngModel)]="chatText"
                   (keydown)="onChatKeydown($event)"
                   [placeholder]="editingMessageId() ? 'Editează mesajul...' : 'Scrie un mesaj...'"
+                  maxlength="1000"
                   rows="1"></textarea>
         <button class="send-btn" (click)="sendMessage()"
                 [disabled]="!chatText.trim() && !selectedChatFile() || uploadingChatFile()">
@@ -489,6 +490,7 @@
                   [(ngModel)]="noteText"
                   (keydown)="onNoteKeydown($event)"
                   [placeholder]="editingNoteId() ? 'Editează notița...' : 'Adaugă o notiță...'"
+                  maxlength="2000"
                   rows="1"></textarea>
         <button class="send-btn" (click)="addNote()"
                 [disabled]="!noteText.trim() && !selectedNoteFile() || uploadingNoteFile()">
