@@ -80,8 +80,14 @@ public class ChatHub : Hub
         var realUserId = await _hubUserService.GetUserIdAsync(Context.User!);
         if (realUserId == null || realUserId != userId) return;
 
+        var sender = await _db.Students.FindAsync(realUserId.Value);
+        if (sender == null) return;
+
         if (string.IsNullOrWhiteSpace(text) && string.IsNullOrWhiteSpace(waitInterval))
             return;
+
+        if (!string.IsNullOrWhiteSpace(text) && text.Length > 1000)
+            throw new HubException("Mesajul depășește limita de 1000 de caractere.");
 
         string? replyToUserName = null;
         string? replyToText = null;
@@ -100,7 +106,7 @@ public class ChatHub : Hub
         {
             Room = room,
             UserId = realUserId.Value,
-            UserName = userName,
+            UserName = sender.FullName,
             Text = string.IsNullOrWhiteSpace(text) ? null : text.Trim(),
             WaitInterval = string.IsNullOrWhiteSpace(waitInterval) ? null : waitInterval,
             CreatedAt = DateTime.UtcNow,
@@ -123,6 +129,11 @@ public class ChatHub : Hub
 
         var message = await _db.Messages.FindAsync(messageId);
         if (message == null || message.UserId != realUserId) return;
+
+        if (string.IsNullOrWhiteSpace(newText))
+            throw new HubException("Mesajul nu poate fi gol.");
+        if (newText.Length > 1000)
+            throw new HubException("Mesajul depășește limita de 1000 de caractere.");
 
         message.Text = newText.Trim();
         message.IsEdited = true;
@@ -163,6 +174,9 @@ public class ChatHub : Hub
         var realUserId = await _hubUserService.GetUserIdAsync(Context.User!);
         if (realUserId == null || realUserId != userId) return;
 
+        var sender = await _db.Students.FindAsync(realUserId.Value);
+        if (sender == null) return;
+
         var existingReactions = await _db.MessageReactions
             .Where(r => r.MessageId == messageId && r.UserId == realUserId)
             .ToListAsync();
@@ -178,7 +192,7 @@ public class ChatHub : Hub
             {
                 MessageId = messageId,
                 UserId = realUserId.Value,
-                UserName = userName,
+                UserName = sender.FullName,
                 Emoji = emoji,
                 CreatedAt = DateTime.UtcNow
             });

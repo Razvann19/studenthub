@@ -90,7 +90,13 @@ public class ActivityHub : Hub
         var realUserId = await _hubUserService.GetUserIdAsync(Context.User!);
         if (realUserId == null || realUserId != userId) return;
 
+        var sender = await _db.Students.FindAsync(realUserId.Value);
+        if (sender == null) return;
+
         if (string.IsNullOrWhiteSpace(text)) return;
+
+        if (text.Length > 1000)
+            throw new HubException("Mesajul depășește limita de 1000 de caractere.");
 
         string? replyToUserName = null;
         string? replyToText = null;
@@ -109,7 +115,7 @@ public class ActivityHub : Hub
         {
             Room = $"activity-{activityId}",
             UserId = realUserId.Value,
-            UserName = userName,
+            UserName = sender.FullName,
             Text = text.Trim(),
             CreatedAt = DateTime.UtcNow,
             ReplyToId = replyToId,
@@ -131,6 +137,11 @@ public class ActivityHub : Hub
 
         var message = await _db.Messages.FindAsync(messageId);
         if (message == null || message.UserId != realUserId) return;
+
+        if (string.IsNullOrWhiteSpace(newText))
+            throw new HubException("Mesajul nu poate fi gol.");
+        if (newText.Length > 1000)
+            throw new HubException("Mesajul depășește limita de 1000 de caractere.");
 
         message.Text = newText.Trim();
         message.IsEdited = true;
@@ -163,6 +174,9 @@ public class ActivityHub : Hub
         var realUserId = await _hubUserService.GetUserIdAsync(Context.User!);
         if (realUserId == null || realUserId != userId) return;
 
+        var sender = await _db.Students.FindAsync(realUserId.Value);
+        if (sender == null) return;
+
         var existing = await _db.MessageReactions
             .Where(r => r.MessageId == messageId && r.UserId == realUserId)
             .ToListAsync();
@@ -176,7 +190,7 @@ public class ActivityHub : Hub
             {
                 MessageId = messageId,
                 UserId = realUserId.Value,
-                UserName = userName,
+                UserName = sender.FullName,
                 Emoji = emoji,
                 CreatedAt = DateTime.UtcNow
             });
@@ -199,13 +213,16 @@ public class ActivityHub : Hub
         var realUserId = await _hubUserService.GetUserIdAsync(Context.User!);
         if (realUserId == null || realUserId != userId) return;
 
+        var sender = await _db.Students.FindAsync(realUserId.Value);
+        if (sender == null) return;
+
         if (string.IsNullOrWhiteSpace(question) || options.Count < 2) return;
 
         var poll = new Poll
         {
             ActivityId = activityId,
             UserId = realUserId.Value,
-            UserName = userName,
+            UserName = sender.FullName,
             Question = question.Trim(),
             AllowUserOptions = allowUserOptions,
             CreatedAt = DateTime.UtcNow
@@ -221,7 +238,7 @@ public class ActivityHub : Hub
                 PollId = poll.Id,
                 Text = optText.Trim(),
                 AddedByUserId = realUserId.Value,
-                AddedByUserName = userName,
+                AddedByUserName = sender.FullName,
                 CreatedAt = DateTime.UtcNow
             });
         }
@@ -276,6 +293,9 @@ public class ActivityHub : Hub
         var realUserId = await _hubUserService.GetUserIdAsync(Context.User!);
         if (realUserId == null || realUserId != userId) return;
 
+        var sender = await _db.Students.FindAsync(realUserId.Value);
+        if (sender == null) return;
+
         var poll = await _db.Polls.FindAsync(pollId);
         if (poll == null || !poll.AllowUserOptions) return;
         if (string.IsNullOrWhiteSpace(text)) return;
@@ -285,7 +305,7 @@ public class ActivityHub : Hub
             PollId = pollId,
             Text = text.Trim(),
             AddedByUserId = realUserId.Value,
-            AddedByUserName = userName,
+            AddedByUserName = sender.FullName,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -323,6 +343,9 @@ public class ActivityHub : Hub
         var realUserId = await _hubUserService.GetUserIdAsync(Context.User!);
         if (realUserId == null || realUserId != userId) return;
 
+        var sender = await _db.Students.FindAsync(realUserId.Value);
+        if (sender == null) return;
+
         var poll = await _db.Polls.FindAsync(pollId);
         if (poll == null) return;
 
@@ -347,7 +370,7 @@ public class ActivityHub : Hub
             PollId = pollId,
             PollOptionId = optionId,
             UserId = realUserId.Value,
-            UserName = userName,
+            UserName = sender.FullName,
             CreatedAt = DateTime.UtcNow
         });
 

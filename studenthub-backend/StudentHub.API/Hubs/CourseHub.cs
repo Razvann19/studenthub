@@ -95,7 +95,13 @@ public class CourseHub : Hub
         var realUserId = await _hubUserService.GetUserIdAsync(Context.User!);
         if (realUserId == null || realUserId != userId) return;
 
+        var sender = await _db.Students.FindAsync(realUserId.Value);
+        if (sender == null) return;
+
         if (string.IsNullOrWhiteSpace(text) && string.IsNullOrWhiteSpace(attachmentUrl)) return;
+
+        if (!string.IsNullOrWhiteSpace(text) && text.Length > 1000)
+            throw new HubException("Mesajul depășește limita de 1000 de caractere.");
 
         string? replyToUserName = null;
         string? replyToText = null;
@@ -114,7 +120,7 @@ public class CourseHub : Hub
         {
             Room = $"course-{courseId}",
             UserId = realUserId.Value,
-            UserName = userName,
+            UserName = sender.FullName,
             Text = string.IsNullOrWhiteSpace(text) ? null : text.Trim(),
             AttachmentUrl = attachmentUrl,
             AttachmentName = attachmentName,
@@ -138,6 +144,11 @@ public class CourseHub : Hub
 
         var message = await _db.Messages.FindAsync(messageId);
         if (message == null || message.UserId != realUserId) return;
+
+        if (string.IsNullOrWhiteSpace(newText))
+            throw new HubException("Mesajul nu poate fi gol.");
+        if (newText.Length > 1000)
+            throw new HubException("Mesajul depășește limita de 1000 de caractere.");
 
         message.Text = newText.Trim();
         message.IsEdited = true;
@@ -170,7 +181,8 @@ public class CourseHub : Hub
         var realUserId = await _hubUserService.GetUserIdAsync(Context.User!);
         if (realUserId == null || realUserId != userId) return;
 
-        var userName = Context.User?.Identity?.Name ?? "Unknown";
+        var sender = await _db.Students.FindAsync(realUserId.Value);
+        if (sender == null) return;
 
         var existing = await _db.MessageReactions
             .Where(r => r.MessageId == messageId && r.UserId == realUserId)
@@ -185,7 +197,7 @@ public class CourseHub : Hub
             {
                 MessageId = messageId,
                 UserId = realUserId.Value,
-                UserName = userName,
+                UserName = sender.FullName,
                 Emoji = emoji,
                 CreatedAt = DateTime.UtcNow
             });
@@ -210,13 +222,19 @@ public class CourseHub : Hub
         var realUserId = await _hubUserService.GetUserIdAsync(Context.User!);
         if (realUserId == null || realUserId != userId) return;
 
+        var sender = await _db.Students.FindAsync(realUserId.Value);
+        if (sender == null) return;
+
         if (string.IsNullOrWhiteSpace(text) && string.IsNullOrWhiteSpace(attachmentUrl)) return;
+
+        if (!string.IsNullOrWhiteSpace(text) && text.Length > 2000)
+            throw new HubException("Notița depășește limita de 2000 de caractere.");
 
         var note = new Note
         {
             CourseId = courseId,
             UserId = realUserId.Value,
-            UserName = userName,
+            UserName = sender.FullName,
             Text = string.IsNullOrWhiteSpace(text) ? null : text.Trim(),
             AttachmentUrl = attachmentUrl,
             AttachmentName = attachmentName,
@@ -239,6 +257,11 @@ public class CourseHub : Hub
 
         var note = await _db.Notes.FindAsync(noteId);
         if (note == null || note.UserId != realUserId) return;
+
+        if (string.IsNullOrWhiteSpace(newText))
+            throw new HubException("Notița nu poate fi goală.");
+        if (newText.Length > 2000)
+            throw new HubException("Notița depășește limita de 2000 de caractere.");
 
         note.Text = newText.Trim();
         note.IsEdited = true;
@@ -268,7 +291,8 @@ public class CourseHub : Hub
         var realUserId = await _hubUserService.GetUserIdAsync(Context.User!);
         if (realUserId == null || realUserId != userId) return;
 
-        var userName = Context.User?.Identity?.Name ?? "Unknown";
+        var sender = await _db.Students.FindAsync(realUserId.Value);
+        if (sender == null) return;
 
         var existing = await _db.NoteReactions
             .Where(r => r.NoteId == noteId && r.UserId == realUserId)
@@ -283,7 +307,7 @@ public class CourseHub : Hub
             {
                 NoteId = noteId,
                 UserId = realUserId.Value,
-                UserName = userName,
+                UserName = sender.FullName,
                 Emoji = emoji,
                 CreatedAt = DateTime.UtcNow
             });
