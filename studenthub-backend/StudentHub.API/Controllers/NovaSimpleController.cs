@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using StudentHub.API.Controllers.Base;
+using StudentHub.API.Data;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -10,11 +12,13 @@ namespace StudentHub.API.Controllers;
 [Authorize(AuthenticationSchemes = "Entra")]
 public class NovaSimpleController : ApiBaseController
 {
+    private readonly AppDbContext _db;
     private readonly IConfiguration _config;
     private readonly HttpClient _http;
 
-    public NovaSimpleController(IConfiguration config, IHttpClientFactory factory)
+    public NovaSimpleController(AppDbContext db, IConfiguration config, IHttpClientFactory factory)
     {
+        _db = db;
         _config = config;
         _http = factory.CreateClient();
     }
@@ -22,15 +26,23 @@ public class NovaSimpleController : ApiBaseController
     [HttpPost("simple")]
     public async Task<IActionResult> Simple([FromBody] SimpleRequest request)
     {
+        var email = GetCurrentUserEmail();
+        if (string.IsNullOrEmpty(email))
+            return Fail("Neautorizat.", 401);
+
+        var user = await _db.Students.FirstOrDefaultAsync(u => u.Email == email.ToLower());
+        if (user == null)
+            return Fail("Utilizatorul nu a fost gasit.", 404);
+
         var apiKey = _config["Anthropic:ApiKey"];
 
         var systemPrompt = $"Ești Nova, asistentul AI al platformei StudentHub UPT. " +
-            $"Vorbești cu {request.UserName}. Fii prietenos și concis. " +
+            $"Vorbești cu {user.FullName}. Fii prietenos și concis. " +
             $"Aceasta este o conversație rapidă din popup — răspunsurile să fie scurte.";
 
         var body = new
         {
-            model = "claude-opus-4-6",
+            model = "claude-sonnet-4-6",
             max_tokens = 500,
             system = systemPrompt,
             messages = request.Messages.Select(m => new { role = m.Role, content = m.Content }).ToList()
@@ -58,7 +70,6 @@ public class NovaSimpleController : ApiBaseController
 public class SimpleRequest
 {
     public List<SimpleMessage> Messages { get; set; } = new();
-    public string UserName { get; set; } = "";
 }
 
 public class SimpleMessage

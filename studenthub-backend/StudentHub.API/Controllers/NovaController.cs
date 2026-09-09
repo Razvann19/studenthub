@@ -164,6 +164,12 @@ public async Task<IActionResult> Chat(int id, [FromBody] ChatDto dto)
         fileContext = $"\n\nConținut document atașat de utilizator:\n{dto.FileContext}\n";
     }
 
+    var history = conversation.Messages
+        .OrderBy(m => m.CreatedAt)
+        .TakeLast(20)
+        .Select(m => new { role = m.Role, content = m.Content })
+        .ToList<object>();
+
     var userMessage = new AiMessage
     {
         ConversationId = id,
@@ -172,12 +178,6 @@ public async Task<IActionResult> Chat(int id, [FromBody] ChatDto dto)
         CreatedAt = DateTime.UtcNow
     };
     _db.AiMessages.Add(userMessage);
-
-    var history = conversation.Messages
-        .OrderBy(m => m.CreatedAt)
-        .TakeLast(20)
-        .Select(m => new { role = m.Role, content = m.Content })
-        .ToList<object>();
 
     var currentMessage = new List<object>
     {
